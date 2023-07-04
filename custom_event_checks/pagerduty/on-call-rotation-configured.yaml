@@ -24,7 +24,6 @@ spec:
       {{ data.escalation_policies | map: "services" | where: "summary", ctx.alias | map: "html_url" }}
 
     {% endif %}
-  samplePayload: '{"messages":[{"incident":{"status":"triggered","service":{"id":"service1"}}},{"incident":{"status":"resolved","service":{"id":"service2"}}}]}'
   sampleQueryParams: ''
   notes: |-
     All services should have an on-call rotation set up in PagerDuty.
@@ -39,4 +38,3 @@ spec:
     1. You have a "Service" created in PagerDuty
     2. Your PD Service has an Escalation Policy with a "Schedule" on the very first escalation rule.  (I.e. in the first group that gets paged.)
     3. You have the PagerDuty service name specified as an alias on the service in OpsLevel
-
