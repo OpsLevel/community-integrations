@@ -1,0 +1,42 @@
+---
+version: 1
+kind: generic
+spec:
+  name: All Services have a PagerDuty rotation
+  serviceSelector: ".escalation_policies[].services[].summary"
+  successCondition: .escalation_policies[] | select(.services| .[].summary == $ctx.alias)
+    | .escalation_rules[0].targets[] | select(.type == "schedule_reference") | any
+  message: |-
+    {% if check.passed %}
+      ### Check passed
+      Service **{{ ctx.alias }}** has an On-Call Schedule assigned in the first level of the assigned escalation policy.
+
+    {% else %}
+      ### Check failed
+      Service **{{ ctx.alias }}** does not have an On-Call Schedule assigned in the first level of the assigned escalation policy.
+
+    <!--
+      {{ ctx }}
+      {{ data.escalation_policies | map: "services" }}
+      {{ data.escalation_policies | map: "services" | where: "summary", ctx.alias }}
+    -->
+
+      {{ data.escalation_policies | map: "services" | where: "summary", ctx.alias | map: "html_url" }}
+
+    {% endif %}
+  samplePayload: '{"messages":[{"incident":{"status":"triggered","service":{"id":"service1"}}},{"incident":{"status":"resolved","service":{"id":"service2"}}}]}'
+  sampleQueryParams: ''
+  notes: |-
+    All services should have an on-call rotation set up in PagerDuty.
+
+    ### Why is this check important?
+
+    On-call rotations ensure that there's always someone who's on-call and available to fix issues with the service when something breaks. To ensure fairness and prevent burning people out, we recommend a rotation with at least 3-4 people in it.
+
+    ### What do I need to do?
+
+    Please ensure that:
+    1. You have a "Service" created in PagerDuty
+    2. Your PD Service has an Escalation Policy with a "Schedule" on the very first escalation rule.  (I.e. in the first group that gets paged.)
+    3. You have the PagerDuty service name specified as an alias on the service in OpsLevel
+
