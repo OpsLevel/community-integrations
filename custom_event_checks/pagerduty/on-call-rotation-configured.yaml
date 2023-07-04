@@ -24,7 +24,6 @@ spec:
       {{ data.escalation_policies | map: "services" | where: "summary", ctx.alias | map: "html_url" }}
 
     {% endif %}
-  sampleQueryParams: ''
   notes: |-
     All services should have an on-call rotation set up in PagerDuty.
 
