@@ -1,4 +1,4 @@
-# Custom Event Check Library
+# Custom Event Checks Library
 
 ## Overview
 OpsLevel's [Custom Event Checks](https://docs.opslevel.com/docs/custom-event-checks) accept arbitrary JSON payloads from any third party platform to create custom, data-driven checks.
