@@ -37,8 +37,8 @@ Note: The bash script would need to run on a cron job to provide updated informa
 
 Check Failed Example
 
-[Check Failed Example Image](fail_message.png)
+![Check Failed Example Image](fail_message.png)
 
 Check Passed Example
 
-[Check Passed Example Image](pass_message.png)
+![Check Passed Example Image](pass_message.png)
