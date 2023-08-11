@@ -1,0 +1,19 @@
+---
+version: 1
+kind: generic
+spec:
+  name: "CodeClimate Quality Test Coverage Rating is A"
+  serviceSelector: "$params.service"
+  successCondition: .data[] | .attributes.rating.letter == "A"
+  message: "{% for item in data.data %}\n {% assign letter_rating = item.attributes.rating.letter
+    %}\n{% endfor %}\n\n{% if check.passed %}\n  ### \U0001F389 Check passed \U0001F389\n
+    \ Service **{{ ctx.alias }}** has a Test Coverage Rating of **{{ letter_rating
+    }}**.\n{% else %}\n  ### Check failed\n  Service **{{ ctx.alias }}** has a Test
+    Coverage Rating of **{{ letter_rating }}**.\n\n  A Test Coverage Rating of **A**
+    is required to pass this check.\n\n  To increase/understand your rating:\n  *
+    Ensure unit tests are added and up to date  \n  * Documentation: <insert url here>\n\n{%
+    endif %}\n"
+  samplePayload: '{"data":[{"id":"596ad7629c5b3756bc000003","type":"test_reports","attributes":{"state":"done","branch":"master","rating":{"path":"/","letter":"B","pillar":"Test
+    Coverage","measure":{"unit":"percent","value":84.946657957762}},"commit_sha":"cd3811626d5f723130417735d10a132f285795cc","received_at":"2018-09-06T20:25:28.098Z","committed_at":"2017-07-16T02:55:52.000Z","lines_of_code":456,"covered_percent":84.946657957762}}],"links":{"last":"https://api.codeclimate.com/v1/repos/696a76232df2736347000001/test_reports?page%5Bnumber%5D=163\u0026page%5Bsize%5D=3","next":"https://api.codeclimate.com/v1/repos/696a76232df2736347000001/test_reports?page%5Bnumber%5D=2\u0026page%5Bsize%5D=3","self":"https://api.codeclimate.com/v1/repos/696a76232df2736347000001/test_reports?page%5Bnumber%5D=1\u0026page%5Bsize%5D=3"}}'
+  sampleQueryParams: service=my-service
+  notes: ''
