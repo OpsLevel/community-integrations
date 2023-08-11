@@ -1,0 +1,22 @@
+# Objective
+
+To create a Custom Event Check to ensure all services have a Test Coverage Rating of A.
+
+Code Climate does not support sending webhooks.
+To accomplish this, we can use a bash script that GETs the test reports for all repos in the CodeClimate org account and push the results to the OpsLevel webhook.
+
+Code Climate's API supports getting back a list of test reports per repo: https://developer.codeclimate.com/?shell#get-test-coverage-reports
+
+# Bash script
+
+[codeclimate-quality-test-coverage-rating-is-a.yml](codeclimate-quality-test-coverage-rating-is-a.yml)
+
+# Result Examples
+
+Check Failed Example
+
+![Check Failed Example Image](fail_message.png)
+
+Check Passed Example
+
+![Check Passed Example Image](pass_message.png)
