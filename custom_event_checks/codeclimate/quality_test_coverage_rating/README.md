@@ -11,6 +11,8 @@ Code Climate's API supports getting back a list of test reports per repo: https:
 
 [codeclimate_test_reports.sh](codeclimate_test_reports.sh)
 
+Note: The bash script would need to run on a schedule to provide up-to-date information to OpsLevel.
+
 # Custom Event Check config
 
 [codeclimate-quality-test-coverage-rating-is-a.yml](codeclimate-quality-test-coverage-rating-is-a.yml)
