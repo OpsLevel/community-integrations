@@ -1,0 +1,49 @@
+# https://taskfile.dev/
+
+version: '3'
+
+tasks:
+  install-cli:
+    desc: Install OpsLevel's CLI
+    aliases: [get-cli]
+    cmds:
+      - echo "Installing OpsLevel's CLI..."
+      - task: install-cli-mac-os
+      - task: install-cli-windows
+      - echo -e "\nSuccess! Run 'opslevel' to get started."
+    silent: true
+
+  install-cli-mac-os:
+    internal: true
+    platforms: [darwin]
+    cmds:
+      - task: brew-install-cli
+      - task: brew-install-jq
+    preconditions:
+      - sh: 'which brew'
+        msg: '"brew" needed to install OpsLevel cli - see https://brew.sh'
+
+  brew-install-cli:
+    internal: true
+    prompt: Install OpsLevel cli with 'brew install opslevel/tap/cli'?
+    cmds: ["brew install opslevel/tap/cli"]
+
+  brew-install-jq:
+    internal: true
+    prompt: Install jq with 'brew install jq'?
+    cmds: ["brew install jq"]
+
+  install-cli-windows:
+    internal: true
+    platforms: [windows]
+    cmds:
+      - echo "TODO - Add Windows install steps here"
+      - exit 1
+
+includes:
+  infra:
+    taskfile: ./infra
+
+  repository:
+    taskfile: ./repository
+    aliases: ["repo"]
