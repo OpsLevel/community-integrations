@@ -1,0 +1,51 @@
+# https://taskfile.dev/
+
+version: '3'
+
+vars:
+  HAS_OWNER: '.owner.OnGroup.id != null or .owner.OnTeam.id != null'
+
+tasks:
+  list-all-names:
+    desc: List names of all infrastructure resources
+    aliases: [ls-all]
+    cmds:
+      - task: list-infra-command
+        vars: { JQ_ARGS: 'unique_by(.name) | map_values(.name)' }
+
+  list-locked:
+    desc: List names of locked infrastructure resources
+    aliases: [ls-locked]
+    cmds:
+      - task: list-infra-command
+        vars: { JQ_ARGS: '[sort_by(.name)[] | select(.ownerLocked == true)] | map_values(.name)' }
+
+  list-owned:
+    desc: List names of owned infrastructure resources
+    aliases: [ls-owned]
+    cmds:
+      - task: list-infra-command
+        vars: { JQ_ARGS: '[sort_by(.name)[] | if {{ .HAS_OWNER }} then .name else empty end]' }
+
+  list-unlocked:
+    desc: List names of unlocked infrastructure resources
+    aliases: [ls-unlocked]
+    cmds:
+      - task: list-infra-command
+        vars: { JQ_ARGS: '[sort_by(.name)[] | select(.ownerLocked == false) ] | map_values(.name)' }
+
+  list-unowned:
+    desc: List names of unowned infrastructure resources
+    aliases: [ls-unowned]
+    cmds:
+      - task: list-infra-command
+        vars: { JQ_ARGS: '[sort_by(.name)[] | if {{ .HAS_OWNER }} then empty else .name end]' }
+
+  list-infra-command:
+    internal: true
+    silent: true
+    requires:
+      vars: [OPSLEVEL_API_TOKEN]
+    cmds:
+      - echo "Requesting list of repositories..."
+      - opslevel list infra -o json | jq '{{.JQ_ARGS}}'

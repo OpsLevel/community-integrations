@@ -1,0 +1,46 @@
+# https://taskfile.dev/
+
+version: '3'
+
+vars:
+  SELECT_GITHUB: 'select(.Type | ascii_downcase == "github")'
+  SELECT_GITLAB: 'select(.Type | ascii_downcase == "gitlab")'
+  SELECT_TIER_1: 'select(.Tier.Alias == "tier_1")'
+
+tasks:
+  list-all-urls:
+    desc: List all available repositories
+    aliases: [ls-all]
+    cmds:
+      - task: list-repo-command
+        vars: { JQ_ARGS: 'unique_by(.Url) | map_values(.Url)' }
+
+  list-github-urls:
+    desc: List Github repository URLs
+    aliases: [ls-github]
+    cmds:
+      - task: list-repo-command
+        vars: { JQ_ARGS: '[.[] | {{ .SELECT_GITHUB }} | .Url] | sort' }
+
+  list-gitlab-urls:
+    desc: List Gitlab repository URLs
+    aliases: [ls-gitlab]
+    cmds:
+      - task: list-repo-command
+        vars: { JQ_ARGS: '[.[] | {{ .SELECT_GITLAB }} | .Url] | sort' }
+
+  list-tier1-urls:
+    desc: List tier 1 repositories
+    aliases: [ls-tier1, ls-tier-1]
+    cmds:
+      - task: list-repo-command
+        vars: { JQ_ARGS: '[.[] | {{ .SELECT_TIER_1 }} | .Url] | sort' }
+
+  list-repo-command:
+    internal: true
+    silent: true
+    requires:
+      vars: [OPSLEVEL_API_TOKEN]
+    cmds:
+      - echo "Requesting list of repositories..."
+      - opslevel list repository -o json | jq '{{.JQ_ARGS}}'
