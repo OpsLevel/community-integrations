@@ -11,10 +11,21 @@ even submit deploy events.
 Like many command line tools, OpsLevel's cli aims to be simple to use
 while providing powerful capabilities to those that wield it.
 
-For this we can use leverage [Task](https://taskfile.dev).
+For this we can leverage [Task](https://taskfile.dev).
 
 ### Task
 
-Install task at [task installation](https://taskfile.dev/installation)
+Install task [here](https://taskfile.dev/installation)
 
 View available tasks with `task --list`
+
+## OpsLevel CLI setup with Task
+
+Streamline OpsLevel CLI setup with this command:
+
+```sh
+# From this directory
+task install-cli
+```
+
+This task uses `brew` to install the `cli` and `jq`.
