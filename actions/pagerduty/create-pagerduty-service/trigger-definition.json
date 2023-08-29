@@ -1,0 +1,17 @@
+{
+  "accessControl": "service_owners",
+  "action": {
+    "id": "<ID>",
+    "name": "Create PagerDuty Service Action"
+  },
+  "description": "Creates a PagerDuty Service for this OpsLevel Service.",
+  "filter": {
+    "id": "<ID>"
+  },
+  "manualInputsDefinition": "version: 1\ninputs:\n  - identifier: escalation\n    displayName: Escalation Policy\n    type: dropdown\n    values:\n    - value: PQVP7JC\n      display: OpsLevel\n    - value: P3F54ZV\n      display: Platform\n    - value: PID26HM \n      display: Security\n    required: true",
+  "name": "Create PagerDuty Service",
+  "owner": {
+    "id": "<ID>"
+  },
+  "responseTemplate": "{% if response.status >= 200 and response.status < 300 %}\n## Congratulations!\nYour request for {{ service.name }} has succeeded. Check it out [here]({{ response.body.service.html_url }})\n{% else %}\n## Oops something went wrong\nPlease contact [{{ action_owner.name }}]({{ action_owner.href }}) for more help.\n{% endif %}"
+}
