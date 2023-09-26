@@ -1280,7 +1280,7 @@ query get_service_dependencies_and_dependents{
 ```graphql
 query get_services{
   account{
-		services{
+    services{
       nodes{
         name
         id
@@ -1388,13 +1388,13 @@ query get_check_results_for_a_service{
         overallLevel {
           id
         }
-				latestCheckResults(ids: ["Z2lkOi8vb3BzbGV2ZWwvQ2hlY2tzOjpIYXNPd25lci8zMTU5"] ) {
-				  serviceAlias
+        latestCheckResults(ids: ["Z2lkOi8vb3BzbGV2ZWwvQ2hlY2tzOjpIYXNPd25lci8zMTU5"] ) {
+          serviceAlias
           check {
             id
           }
           status
-				}
+        }
       }
     }
   }
@@ -1499,7 +1499,7 @@ query get_all_teams{
             id
           }
           members {
-						nodes{
+              nodes{
               name
               email
             }
@@ -1604,8 +1604,8 @@ query get_users{
 
 ```graphql
 query users_active_only{
-	account {
-		users(filter: [{ key: deactivated_at, arg: null, type: equals }]) {
+  account {
+    users(filter: [{ key: deactivated_at, arg: null, type: equals }]) {
       nodes {
         id
         name

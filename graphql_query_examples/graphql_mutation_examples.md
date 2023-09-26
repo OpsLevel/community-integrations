@@ -81,7 +81,7 @@ mutation delete_deploy_by_ids{
 ```graphql
 query get_services{
   account{
-		services{
+    services{
       nodes{
         name
         id
@@ -122,7 +122,7 @@ mutation enable_badge_for_service{
 ```graphql
 mutation create_Group_for_me_1{
   groupCreate(input: {name: "Sales"}){
-  	group{
+    group{
       id
       name
       description
@@ -147,7 +147,7 @@ mutation create_Group_for_me_1{
   errors{
     message
     path
-  }
+    }
   }
 }
 ```
@@ -172,7 +172,7 @@ query get_Groups{
 
 mutation create_subGroup_for_me_1{
   groupCreate(input: {name: "Sales Subgroup 1", parent:{alias: "Sales"}, teams:{alias: "Sales Team"}}){
-  	group{
+    group{
       id
       name
       description
@@ -183,7 +183,7 @@ mutation create_subGroup_for_me_1{
   errors{
     message
     path
-  }
+    }
   }
 }
 ```
@@ -1022,10 +1022,10 @@ tagAssign(input: {id: $id, alias: $alias, type: $type, tags: $tags}){
       value
       }
     errors {
-			message
+      message
       path
     }
-	}
+  }
 }
 ```
 
@@ -1051,10 +1051,10 @@ mutation tagAssign_to_a_team($id: ID, $alias: String, $type: TaggableResource, $
       value
       }
     errors {
-			message
+      message
       path
     }
-	}
+  }
 }
 ```
 
@@ -1113,7 +1113,7 @@ query get_all_teams{
             id
           }
           members {
-						nodes{
+              nodes{
               name
               email
             }
@@ -1159,7 +1159,7 @@ query get_all_teams{
             id
           }
           members {
-						nodes{
+              nodes{
               name
               email
             }
@@ -1205,7 +1205,7 @@ query get_all_teams{
             id
           }
           members {
-						nodes{
+              nodes{
               name
               email
             }
