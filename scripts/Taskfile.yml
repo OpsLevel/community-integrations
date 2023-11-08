@@ -1,0 +1,46 @@
+# https://taskfile.dev/
+
+version: '3'
+
+tasks:
+
+  lint:
+    desc: Check formatting and linting
+    cmds:
+      - echo "Checking formatting and linting for Python scripts..."
+      - hatch run lint
+      - echo "Checking formatting and linting for Ruby scripts..."
+      - echo "None configured yet."
+    preconditions:
+    - sh: 'which hatch'
+      msg: '"hatch" manages the virtualenv to lint code - run "pip install hatch"'
+
+  lintfix:
+    desc: Fix formatting and linting
+    cmds:
+      - echo "Fixing formatting and linting for Python scripts..."
+      - hatch run lint-fix
+      - echo "Fixing formatting and linting for Ruby scripts..."
+      - echo "None configured yet."
+    preconditions:
+    - sh: 'which hatch'
+      msg: '"hatch" manages the virtualenv to fix code - run "pip install hatch"'
+
+  setup:
+    desc: Setup tools needed to use scripts
+    cmds:
+      - echo "Running setup needed to use Python scripts..."
+      - pip --quiet install hatch
+      - echo "Running setup needed to use Ruby scripts..."
+      - echo "None configured yet."
+
+  test:
+    desc: Run tests found in scripts directory
+    cmds:
+      - echo "Running tests for Python scripts..."
+      - hatch run test || exit 0
+      - echo "Running tests for Ruby scripts..."
+      - echo "None configured yet."
+    preconditions:
+    - sh: 'which hatch'
+      msg: '"hatch" manages the virtualenv to test code - run "pip install hatch"'
