@@ -3,7 +3,7 @@
 ### 🔎 GraphQL schema
 
 ```graphql
-{
+query get_opslevel_graphql_api_schema{
   __schema {
     queryType {
       name
