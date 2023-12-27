@@ -1,6 +1,6 @@
 ## 🧬 Mutations
 
-### 🧬 aliasCreate, get service ids first
+### 🧬 aliasCreate for a service, get services first
 
 Use case: Add aliases to services in bulk with our API
 
@@ -20,6 +20,32 @@ query get_services{
 mutation aliasCreate_for_a_service{
   aliasCreate(input:{ownerId: "Z2lkOi8vb3BzbGV2ZWwvU2VydmljZS80ODM2NQ", alias: "another_alias"}) {
     ownerId
+    errors{
+      message
+      path
+    }
+  }
+}
+```
+
+### 🧬 aliasDelete for a service service, get services first
+
+```graphql
+query get_services{
+  account{
+    services{
+      nodes{
+        name
+        id
+        aliases
+      }
+    }
+  }
+}
+
+mutation aliasDelete_for_a_service{
+  aliasDelete(input:{ownerType:service, alias:"catalog_service"}){
+    deletedAlias
     errors{
       message
       path
