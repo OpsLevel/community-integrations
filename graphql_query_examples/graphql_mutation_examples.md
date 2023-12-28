@@ -28,7 +28,7 @@ mutation aliasCreate_for_a_service{
 }
 ```
 
-### 🧬 aliasDelete for a service service, get services first
+### 🧬 aliasDelete for a service, get services first
 
 ```graphql
 query get_services{
