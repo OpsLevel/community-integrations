@@ -15,7 +15,7 @@ Requirements:
 
 To run this:
 
-1. Add your api token to OPSLEVEL_API_TOKEN
+1. Add your api token to an `OPSLEVEL_API_TOKEN` environment variable
 2. Execute the commands below. 
 
 ```bash
