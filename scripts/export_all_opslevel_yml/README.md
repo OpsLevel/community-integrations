@@ -6,7 +6,7 @@ each service in your OpsLevel account. The contents are written to file as:
 
 The script can be updated to push/copy the opslevel.yml file to the 
 coresponding service's repo (and maybe automatically open a pull/merge request)
-in the git forge.
+in the git repository.
 
 Requirements:
 
