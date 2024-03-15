@@ -50,7 +50,7 @@ SERVICES_BY_TAG_QUERY = """
 UPDATE_PROPERTY_MUTATION = """
     mutation update_property($service_id:ID, $definition_alias:String, $value:JsonString!){
       propertyAssign(input: {owner: {id: $service_id}, definition: {alias: $definition_alias},
-      value: $value}) {
+      value: $value, runValidation: false}) {
         property{
           value
           owner{
