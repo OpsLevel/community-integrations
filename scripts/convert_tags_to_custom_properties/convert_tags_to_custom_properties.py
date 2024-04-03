@@ -109,16 +109,17 @@ def main():
         property_schema_type = property_info["schema"]["type"]
         print(f"{index}. Property Name: {property_name}, Alias: {property_alias}, Schema Type: {property_schema_type}")
 
-    selected_index = int(input("Select a property by entering its index: ")) - 1
+    selected_index = int(input("Select a property by entering its index (only booleans and arrays are supported at this time): ")) - 1
     if 0 <= selected_index < len(properties):
         selected_property = properties[selected_index]
         print(f"You selected: {selected_property['name']} with alias: {selected_property['aliases'][0]} and schema type: {selected_property['schema']['type']}")
 
+        #TODO: Add support for other schema types if needed, such as:
+        # - text
+        # - object
         service_mutations = {
             "boolean": execute_boolean_mutation,
-            "array": execute_array_mutation,
-            "text": execute_text_mutation,
-            "object": execute_object_mutation
+            "array": execute_array_mutation
         }
 
         mutation_executor = service_mutations.get(selected_property["schema"]["type"])
@@ -156,7 +157,7 @@ def execute_boolean_mutation(property_info):
                     print("Bool mutation executed.")
                     print(response)
         else:
-            print("No service found with the selected alias as a tag.")
+            print("No other services found with tags matching the boolean key. Completed!")
 
         # Check if there are more pages
         services_page_info = response_services_by_tag["data"]["account"]["services"]["pageInfo"]
@@ -186,21 +187,7 @@ def execute_array_mutation(property_info):
         print("Array mutation executed.")
         print(response)
 
-
-def execute_text_mutation(property_info):
-    """
-    Execute mutation for text schema type.
-    """
-    # Implement text mutation logic here
-    print("Running mutation for text schema type...")
-
-
-def execute_object_mutation(property_info):
-    """
-    Execute mutation for object schema type.
-    """
-    # Implement object mutation logic here
-    print("Running mutation for object schema type...")
+    print("No other services found with tags matching the array key. Completed!")
 
 
 if __name__ == "__main__":
