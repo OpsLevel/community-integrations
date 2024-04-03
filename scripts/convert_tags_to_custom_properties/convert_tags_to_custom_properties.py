@@ -75,6 +75,8 @@ def opslevel_graphql_query(query, variables=None):
     }
     data = {"query": query, "variables": variables}
     response = requests.post(OPSLEVEL_ENDPOINT, json=data, headers=headers)
+    if response.status_code != 200:
+        raise Exception(f"OpsLevel request failed: {response.content.decode()}")
     return response.json()
 
 
@@ -131,7 +133,8 @@ def execute_boolean_mutation(property_info):
     Execute mutation for boolean schema type.
     """
     cursor = None
-    while True:
+    has_next_page = True
+    while has_next_page:
         # Execute the GraphQL query using the selected alias as the tag key
         response_services_by_tag = opslevel_graphql_query(
             SERVICES_BY_TAG_QUERY, variables={"endCursor": cursor, "tag_key": property_info["aliases"][0]}
@@ -156,9 +159,9 @@ def execute_boolean_mutation(property_info):
             print("No service found with the selected alias as a tag.")
 
         # Check if there are more pages
-        if not response_services_by_tag["data"]["account"]["services"]["pageInfo"]["hasNextPage"]:
-            break
-        cursor = response_services_by_tag["data"]["account"]["services"]["pageInfo"]["endCursor"]
+        services_page_info = response_services_by_tag["data"]["account"]["services"]["pageInfo"]
+        has_next_page = services_page_info["hasNextPage"]
+        cursor = services_page_info["endCursor"]
 
 
 def execute_array_mutation(property_info):
