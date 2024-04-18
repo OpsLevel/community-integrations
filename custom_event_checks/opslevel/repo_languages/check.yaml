@@ -1,0 +1,43 @@
+---
+version: 1
+kind: generic
+spec:
+  name: "Javascript to Typescript Conversion"
+  serviceSelector: ".[] | .alias"
+  successCondition: ". | if (.languages.TypeScript != null, .languages.JavaScript != null) then .languages.TypeScript > .languages.JavaScript else true end"
+  message: |-
+    {% if check.passed %}
+      ### Check passed
+      Service **{{ ctx.alias }}** has more Typescript then Javascript.
+
+    {% else %}
+      ### Check failed
+      Service **{{ ctx.alias }}** has les Typescript then Javascript.
+
+    {% endif %}
+  samplePayload: |
+    [
+      {
+        "alias": "service1",
+        "languages": {
+          "Ruby": 0.2779,
+          "JavaScript": 0.4563,
+          "TypeScript": 0.23
+        }
+      }
+      {
+        "alias": "service2",
+        "languages": {
+          "TypeScript": 0.5579,
+          "JavaScript": 0.3963
+        }
+      }
+      {
+        "alias": "Service3",
+        "languages": {
+          "HCL": 0.4779,
+          "Shell": 0.4963
+        }
+      }
+    ]
+  notes: ''
