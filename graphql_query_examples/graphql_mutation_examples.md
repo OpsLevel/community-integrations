@@ -221,7 +221,7 @@ Docs:
 [Import Infrastructure Objects via API](https://docs.opslevel.com/docs/import-infrastructure-objects-via-api#create-infrastructure-objects-via-graphql-api)
 
 ```graphql
-# Use with query variables (see below in Notion page)
+# Use with query variables below
 mutation infrastructureResourceCreate(
   $data: JSON,
   $schema: InfrastructureResourceSchemaInput,
@@ -930,7 +930,7 @@ mutation create_Service_redis{
 Note: This is NOT idempotent
 
 ```graphql
-# Use with query variables (see below in Notion page)
+# Use with query variables below
 mutation CreateService_test($alias: String!, $tier: String, $owner: String, $tags: [TagInput!]!) {
   serviceCreate(input: {name: $alias, tierAlias: $tier, ownerAlias: $owner}) {
     service {
@@ -992,7 +992,7 @@ Query Variables
 Use case: This mutation will link the repository to their corresponding service, and when you update the owner for the repository, this will be inherited by the linked service.
 
 ```graphql
-# Use with query variables (see below in Notion page)
+# Use with query variables below
 mutation serviceRepositoryCreate_and_repositoryUpdate($repository_id: ID!, $service_alias: String!, $ownerId: ID!){
   serviceRepositoryCreate(input: {service: {alias: $service_alias} repository: {id: $repo_id} baseDirectory: "/"} ){
     serviceRepository{
@@ -1040,7 +1040,7 @@ Query Variables
 If a tag key already exists, tagAssign will replace the value.
 
 ```graphql
-# Use with query variables (see below in Notion page)
+# Use with query variables below
 mutation tagAssign_to_a_service($id: ID, $alias: String, $type: TaggableResource, $tags: [TagInput!]!){
 tagAssign(input: {id: $id, alias: $alias, type: $type, tags: $tags}){
     tags {
@@ -1069,7 +1069,7 @@ Query Variables
 ### 🧬 tagAssign, assigning tags to a team
 
 ```graphql
-# Use with query variables (see below in Notion page)
+# Use with query variables below
 mutation tagAssign_to_a_team($id: ID, $alias: String, $type: TaggableResource, $tags: [TagInput!]!){
   tagAssign(input: {id: $id, alias: $alias, type: $type, tags: $tags}){
     tags {
@@ -1093,6 +1093,38 @@ Query Variables
     {"key": "sme", "value":"domains"}
   ],
   "type": "Team"
+}
+```
+
+### 🧬 tagAssign, assigning tags to a user
+
+```graphql
+# Use with query variables below
+mutation tagAssign_to_a_user($id: ID, $alias: String, $type: TaggableResource, $tags: [TagInput!]!){
+  tagAssign(input: {id: $id, alias: $alias, type: $type, tags: $tags}){
+    tags {
+      key
+      value
+      }
+    errors {
+      message
+      path
+    }
+  }
+}
+```
+
+Query Variables
+
+```json
+{
+  "id": "Z2lkOi8vb3BzbGV2ZWwvVXNlci80MjIw",
+  "tags": [
+    {"key": "sme", "value":"kubectl-opslevel"},
+    {"key": "country", "value": "CA"},
+    {"key": "role", "value": "Lead Customer Support Engineer"}
+  ],
+  "type": "User"
 }
 ```
 
