@@ -78,23 +78,19 @@ def main():
         print(f"Role: {user['role']}, Email: {user['email']}, Name: {user['name']}, ")
 
     # prompt user to confirm they want to change all users to the "team_member" role
-    confirm = input("Are you sure you want to change all users to the 'team_member' role? (y/n) ")
-    # if n, exit
-    if confirm.lower() == "n":
-        print("Exiting...")
-        return
-    elif confirm.lower() == "y":
-        # loop through each user and run graphql mutation to change all users to the selected role
-        for user in users:
-            response = opslevel_graphql_query(
-                UPDATE_USER_ROLE_MUTATION,
-                variables={"email": user["email"], "role": "team_member"},
-            )
-            print("Mutation executed.")
-            print(response)
-    else:
-        print("Invalid input. Exiting...")
-        return
+    confirm = input("Are you sure you want to change all users to the 'team_member' role? Enter 'y' to confirm: ")
+    
+    if confirm.lower() != "y":
+      raise Exception("'y' not entered. Exiting...")
+
+    # loop through each user and run graphql mutation to change all users to the selected role
+    for user in users:
+        response = opslevel_graphql_query(
+            UPDATE_USER_ROLE_MUTATION,
+            variables={"email": user["email"], "role": "team_member"},
+        )
+        print("Mutation executed.")
+        print(response)
 
 if __name__ == "__main__":
     if OPSLEVEL_API_TOKEN is None:
