@@ -420,6 +420,7 @@ query get_all_infra_resources {
     }
   }
 }
+```
 
 ```graphql
 mutation infrastructureResourceUpdate(
