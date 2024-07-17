@@ -296,13 +296,18 @@ query get_Groups{
 ### 🔎 infrastructureResources (get all)
 
 ```graphql
-query get_all_infra_resources {
+query get_all_infra_resources($endCursor: String) {
   account {
-    infrastructureResources {
+    infrastructureResources(after: $endCursor) {
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
       nodes {
-       id
-       name
-       href
+        id
+        name
+        href
+        rawData
       }
     }
   }
