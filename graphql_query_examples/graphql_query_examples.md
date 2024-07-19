@@ -761,16 +761,57 @@ query get_checks{
 ### 🔎 services > all
 
 ```graphql
-query get_services{
-  account{
-    services{
-      nodes{
+query get_services($endCursor: String) {
+  account {
+    services(after: $endCursor) {
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+      nodes {
         name
         id
         aliases
-        timestamps{
+        timestamps {
           createdAt
           updatedAt
+        }
+        owner {
+          name
+          alias
+          id
+        }
+        language
+        framework
+        lifecycle {
+          name
+        }
+        tier {
+          name
+        }
+        parent {
+          name
+          __typename
+          parent {
+            name
+            __typename
+          }
+        }
+        product
+        properties {
+          nodes {
+            definition {
+              name
+            }
+            value
+          }
+        }
+        tags {
+          nodes {
+            key
+            value
+            id
+          }
         }
       }
     }
