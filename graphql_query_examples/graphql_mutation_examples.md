@@ -402,6 +402,139 @@ Query Variables for creating a “VPC” resource
 }
 ```
 
+### 🧬 infrastructureResourceUpdate (get all infrastructure ids first)
+
+Notes: 
+* Only infrastructure resources created through the API can be updated with this mutation. If the infrastructure resource was created with the AWS integration, the resource needs to be removed in AWS.
+* Include existing and new values in data. It is a full overwrite, not an incremental update. Currently set fields not included in data will disappear.
+
+```graphql
+query get_all_infra_resources {
+  account {
+    infrastructureResources {
+      nodes {
+       id
+       name
+       href
+      }
+    }
+  }
+}
+```
+
+```graphql
+mutation infrastructureResourceUpdate(
+  $infrastructureResourceAlias:String,
+  $infrastructureResourceID:ID,
+  $ownerId:ID,
+  $data:JSON,
+  $schema: InfrastructureResourceSchemaInput,
+  $providerData: InfrastructureResourceProviderDataInput,
+  $providerResourceType: String,
+){
+  infrastructureResourceUpdate(
+    infrastructureResource:{alias:$infrastructureResourceAlias,id:$infrastructureResourceID}
+    input:{
+      data:$data
+      ownerId:$ownerId
+      schema:$schema
+      providerData:$providerData
+      providerResourceType:$providerResourceType
+    }
+  ){
+    infrastructureResource{
+      id
+      name
+      owner{
+        ... on Team{
+          name
+        }
+      }
+      data
+      rawData
+    }
+    errors{
+      message
+      path
+    }
+  }
+}
+```
+
+<details>
+  <summary>Example response expand to show</summary>
+
+```json
+{
+  "data": {
+    "infrastructureResourceUpdate": {
+      "infrastructureResource": {
+        "id": "Z2lkOi8vb3BzbGV2ZWwvRW50aXR5T2JqZWN0LzI5MzQxMjA",
+        "name": "gke-catalog-service-prod-1",
+        "owner": {
+          "name": "Order Management Team"
+        },
+        "data": {
+          "name": "gke-catalog-service-prod-1",
+          "zone": "us-central1-c",
+          "image_id": "debian-11-bullseye-v20230615",
+          "external_id": "https://www.googleapis.com/compute/v1/projects/genial-tangent-1234/zones/us-central1-c/instances/gke-catalog-service-prod-1",
+          "instance_id": "6412763931310739113",
+          "launch_time": "2024-07-17T13:26:35.000000",
+          "instance_type": "f1-micro",
+          "platform_details": "Debian GNU/Linux",
+          "public_ip_address": "--"
+        },
+        "rawData": {
+          "name": "gke-catalog-service-prod-1",
+          "zone": "us-central1-c",
+          "image_id": "debian-11-bullseye-v20230615",
+          "external_id": "https://www.googleapis.com/compute/v1/projects/genial-tangent-1234/zones/us-central1-c/instances/gke-catalog-service-prod-1",
+          "instance_id": "6412763931310739113",
+          "launch_time": "2024-07-17T13:26:35.000000",
+          "instance_type": "f1-micro",
+          "platform_details": "Debian GNU/Linux",
+          "public_ip_address": "--"
+        }
+      },
+      "errors": []
+    }
+  }
+}
+```
+</details>
+
+Query Variables for updating an existing "Compute” resource
+
+```json
+{
+  "infrastructureResourceAlias": "",
+  "infrastructureResourceID": "Z2lkOi8vb3BzbGV2ZWwvRW50aXR5T2JqZWN0LzI5MzQxMjA",
+  "ownerId": "Z2lkOi8vb3BzbGV2ZWwvVGVhbS8xNjUx",
+  "data": {
+    "name": "gke-catalog-service-prod-1",
+    "instance_id": "6412763931310739113",
+    "external_id": "https://www.googleapis.com/compute/v1/projects/genial-tangent-1234/zones/us-central1-c/instances/gke-catalog-service-prod-1",
+    "image_id": "debian-11-bullseye-v20230615",
+    "zone": "us-central1-c",
+    "instance_type": "f1-micro",
+    "platform_details": "Debian GNU/Linux",
+    "launch_time": "2024-07-17T13:26:35.000000",
+    "public_ip_address": "--"
+  },
+  "schema": {
+    "type": "Compute"
+  },
+  "providerData": {
+    "accountName": "(Example) 5604422034290",
+    "externalUrl": "https://www.googleapis.com/compute/v1/projects/genial-tangent-1234",
+    "providerName": "GCP"
+  },
+  "providerResourceType": "Compute Engine"
+}
+```
+
+
 ### 🧬 infrastructureResourceDelete (get all infrastructure ids first)
 
 Note: Only infrastructure resources created through the API can be deleted with this mutation. If the infrastructure resource was created with the AWS integration, the resource needs to be removed in AWS.
