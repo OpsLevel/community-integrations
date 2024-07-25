@@ -21,7 +21,7 @@ spec:
     {% if infra.type == "Database" %}
     Infrastructure Resource: **{{ infra.name }}**
     * ca_certifate_identifier: {{ infra.rawData["ca_certificate_identifier"] }}
-    * http://app.opslevel.com/{{ infra.href }}
+    * http://app.opslevel.com{{ infra.href }}
     {% endif %}
     {% endif %}
     {% endfor %}
@@ -39,7 +39,7 @@ spec:
     {% if infra.type == "Database" and infra.rawData["ca_certificate_identifier"] == "rds-ca-2019" %}
     Infrastructure Resource: **{{ infra.name }}**
     * ca_certifate_identifier: {{ infra.rawData["ca_certificate_identifier"] }}
-    * http://app.opslevel.com/{{ infra.href }}
+    * http://app.opslevel.com{{ infra.href }}
     {% endif %}
     {% endif %}
     {% endfor %}
