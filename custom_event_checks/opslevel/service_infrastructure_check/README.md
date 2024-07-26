@@ -10,7 +10,7 @@ Ensure AWS infrastructure resources are tagged with the appropriate AWS tags to 
 
 # Bash script
 
-[`aws-rds-certificate-expiration-check.sh`](aws-rds-certificate-expiration-check.sh)
+[opslevel_query_services_and_related_infra.sh](opslevel_query_services_and_related_infra.sh)
 
 Note: The bash script would need to run on a schedule to provide up-to-date information to OpsLevel.
 
