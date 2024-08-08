@@ -18,16 +18,35 @@ Requirements:
 * OpsLevel CLI https://github.com/OpsLevel/cli
 * jq https://stedolan.github.io/jq/
 
-# Custom Event Check config
+# Service Infrastructure Checks
+
+* [RDS Certificate Expiration Check](#rds-certificate-expiration-check-custom-event-check-config)
+* [PostgreSQL Extended Support Check](#postgresql-extended-support-check-custom-event-check-config)
+
+## RDS Certificate Expiration Check Custom Event Check config
 
 [aws-rds-certificate-expiration-check.yml](aws-rds-certificate-expiration-check.yml)
 
-# Result Examples
+### Result Examples
 
 Check Failed Example
 
-![Check Failed Example Image](fail_message.png)
+![RDS Certificate Expiration Check Failed Example Image](rds_certificate_expiration_check_fail_message.png)
 
 Check Passed Example
 
-![Check Passed Example Image](pass_message.png)
+![RDS Certificate Expiration Check Passed Example Image](rds_certificate_expiration_check_pass_message.png)
+
+## PostgreSQL Extended Support Check Custom Event Check config
+
+[aws-postgres-extended-support-check.yml](aws-postgres-extended-support-check.yml)
+
+### Result Examples
+
+Check Failed Example
+
+![PostgreSQL Extended Support Check Failed Example Image](postgres_extended_support_check_fail_message.png)
+
+Check Passed Example
+
+![PostgreSQL Extended Support Check Passed Example Image](postgres_extended_support_check_pass_message.png)
