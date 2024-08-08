@@ -18,8 +18,8 @@ Requirements:
 
 # Service Infrastructure Checks
 
-* [RDS Certificate Expiration Check](#rds-certificate-expiration-check-custom-event-check-config)
-* [PostgreSQL Extended Support Check](#postgresql-extended-support-check-custom-event-check-config)
+* [RDS Certificate Expiration Check](#rds-certificate-expiration-check)
+* [PostgreSQL Extended Support Check](#postgresql-extended-support-check)
 
 ## RDS Certificate Expiration Check 
 
