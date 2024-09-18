@@ -99,12 +99,16 @@ fragment TypeRef on __Type {
 ### 🔎 campaigns > all
 
 ```graphql
-query get_campaigns{
+query get_campaigns($endCursor: String){
   account{
-    campaigns{
+    campaigns(after: $endCursor){
       nodes{
         id
         name
+      }
+      pageInfo{
+        endCursor
+        hasNextPage
       }
     }
   }
@@ -130,34 +134,40 @@ query get_campaign_details{
 ### 🔎 checks (query for “everything”)
 
 ```graphql
-query get_checks{
-  account{
-    rubric{
-      checks {
-        edges {
-          node {
+query get_checks($endCursor: String) {
+  account {
+    rubric {
+      checks(after: $endCursor) {
+        nodes {
+          id
+          name
+          type
+          category {
             id
             name
-            type
-            category {
-              id
-              name
-            }
-            description
-            enabled
-            enableOn
-            filter {
-              id
-              name
-            }
-            level {
-              id
-              name
-            }
-            notes
-            owner
-            type
           }
+          description
+          enabled
+          enableOn
+          filter {
+            id
+            name
+          }
+          level {
+            id
+            name
+          }
+          notes
+          owner {
+            ... on Team {
+              name
+            }
+          }
+          type
+        }
+        pageInfo{
+          endCursor
+          hasNextPage
         }
       }
     }
@@ -168,16 +178,18 @@ query get_checks{
 ### 🔎 check: RepositoryFileCheck (get details for a specific check), get checks first
 
 ```graphql
-query get_checks_short_info{
-  account{
-    rubric{
-      checks {
-        edges {
-          node {
-            id
-            name
-            type
-          }
+query get_checks_short_info($endCursor:String) {
+  account {
+    rubric {
+      checks(after: $endCursor) {
+        nodes {
+          id
+          name
+          type
+        }
+        pageInfo{
+          endCursor
+          hasNextPage
         }
       }
     }
@@ -207,19 +219,29 @@ query get_repo_file_check {
 ### 🔎 deploys (for a specific service within a specific timerange)
 
 ```graphql
-query deploys_just_for_shopping_cart{
-  account{
-    deploys(start: "2023-01-01T00:00:00.000Z", end: "2023-12-31T23:59:59.999Z", environments:["production","staging"], serviceId:{alias: "shopping_cart"} ) {
-      edges {
-        node {
+query deploys_just_for_shopping_cart($endCursor:String) {
+  account {
+    deploys(
+      start: "2024-01-01T00:00:00.000Z"
+      end: "2024-01-31T23:59:59.999Z"
+      environments: ["production", "staging"]
+      serviceId: {alias: "shopping_cart"}
+      after: $endCursor
+    ) {
+      totalCount
+      filteredCount
+      nodes {
+        id
+        description
+        environment
+        service {
           id
-          description
-          environment
-          service {
-            id
-            name
-          }
+          name
         }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
       }
     }
   }
@@ -234,85 +256,41 @@ query deploys_just_for_shopping_cart{
   "data": {
     "account": {
       "deploys": {
-        "edges": [
+        "totalCount": 1078,
+        "filteredCount": 199,
+        "nodes": [
           {
-            "node": {
-              "id": "Z2lkOi8vb3BzbGV2ZWwvRGVwbG95LzYyMjIxODk",
-              "description": "Updated Operations Center UI",
-              "environment": "Production",
-              "service": {
-                "id": "Z2lkOi8vb3BzbGV2ZWwvU2VydmljZS8xMzQzMg",
-                "name": "Shopping Cart Service"
-              }
+            "id": "Z2lkOi8vb3BzbGV2ZWwvRGVwbG95LzE0MzQ1OTAw",
+            "description": "Updated Operations Center UI",
+            "environment": "Production",
+            "service": {
+              "id": "Z2lkOi8vb3BzbGV2ZWwvU2VydmljZS8xMzQzMg",
+              "name": "Shopping Cart Service"
             }
           },
           {
-            "node": {
-              "id": "Z2lkOi8vb3BzbGV2ZWwvRGVwbG95LzYyMjIyNDU",
-              "description": "Updated Operations Center UI",
-              "environment": "Production",
-              "service": {
-                "id": "Z2lkOi8vb3BzbGV2ZWwvU2VydmljZS8xMzQzMg",
-                "name": "Shopping Cart Service"
-              }
+            "id": "Z2lkOi8vb3BzbGV2ZWwvRGVwbG95LzE0MzQ2MzYw",
+            "description": "Updated Operations Center UI",
+            "environment": "Production",
+            "service": {
+              "id": "Z2lkOi8vb3BzbGV2ZWwvU2VydmljZS8xMzQzMg",
+              "name": "Shopping Cart Service"
             }
           },
           {
-            "node": {
-              "id": "Z2lkOi8vb3BzbGV2ZWwvRGVwbG95LzYyMjE5NTM",
-              "description": "Updated Operations Center UI",
-              "environment": "Production",
-              "service": {
-                "id": "Z2lkOi8vb3BzbGV2ZWwvU2VydmljZS8xMzQzMg",
-                "name": "Shopping Cart Service"
-              }
-            }
-          },
-          {
-            "node": {
-              "id": "Z2lkOi8vb3BzbGV2ZWwvRGVwbG95LzYyMjIyMjM",
-              "description": "Updated Operations Center UI",
-              "environment": "Production",
-              "service": {
-                "id": "Z2lkOi8vb3BzbGV2ZWwvU2VydmljZS8xMzQzMg",
-                "name": "Shopping Cart Service"
-              }
-            }
-          },
-          {
-            "node": {
-              "id": "Z2lkOi8vb3BzbGV2ZWwvRGVwbG95LzYyMjE5Mjk",
-              "description": "Updated Operations Center UI",
-              "environment": "Staging",
-              "service": {
-                "id": "Z2lkOi8vb3BzbGV2ZWwvU2VydmljZS8xMzQzMg",
-                "name": "Shopping Cart Service"
-              }
-            }
-          },
-          {
-            "node": {
-              "id": "Z2lkOi8vb3BzbGV2ZWwvRGVwbG95LzYyMjIyMTQ",
-              "description": "Updated Operations Center UI",
-              "environment": "Staging",
-              "service": {
-                "id": "Z2lkOi8vb3BzbGV2ZWwvU2VydmljZS8xMzQzMg",
-                "name": "Shopping Cart Service"
-              }
-            }
-          },
-          {
-            "node": {
-              "id": "Z2lkOi8vb3BzbGV2ZWwvRGVwbG95LzYyMjIwNjY",
-              "description": "Updated Operations Center UI",
-              "environment": "Staging",
-              "service": {
-                "id": "Z2lkOi8vb3BzbGV2ZWwvU2VydmljZS8xMzQzMg",
-                "name": "Shopping Cart Service"
-              }
+            "id": "Z2lkOi8vb3BzbGV2ZWwvRGVwbG95LzE0MzQ2NjA5",
+            "description": "Updated Operations Center UI",
+            "environment": "Staging",
+            "service": {
+              "id": "Z2lkOi8vb3BzbGV2ZWwvU2VydmljZS8xMzQzMg",
+              "name": "Shopping Cart Service"
             }
           }
-        ]
+        ],
+        "pageInfo": {
+          "endCursor": "MTAw",
+          "hasNextPage": true
+        }
       }
     }
   }
@@ -345,24 +323,6 @@ query get_filters{
 }
 ```
 
-### 🔎 groups
-
-```graphql
-query get_Groups{
-  account{
-    groups{
-      nodes{
-        id
-        name
-        alias
-        parent {
-          id
-        }
-      }
-    }
-  }
-}
-```
 
 ### 🔎 infrastructureResources (get all)
 
@@ -502,14 +462,18 @@ query infrastructureResourceSchemas {
 ### 🔎 integrations (get all)
 
 ```graphql
-query integrations{
+query integrations($endCursor: String){
   account{
-    integrations{
+    integrations(after: $endCursor){
       nodes{
         id
         name
         createdAt
         type
+      }
+      pageInfo{
+        endCursor
+        hasNextPage
       }
     }
   }
@@ -574,7 +538,11 @@ query integrations{
               "type": "datadog"
             }
           }
-        ]
+        ],
+        "pageInfo": {
+          "endCursor": "Mzc",
+          "hasNextPage": false
+        }
       }
     }
   }
@@ -719,49 +687,30 @@ query get_opslevel_public_ips {
 }
 ```
 
-### 🔎 repositories (get repository aliases)
+### 🔎 repositories (get repository aliases and ids)
 
 ```graphql
-query get_all_repository_aliases{
-  account{
-    repositories{
-      pageInfo{
-        startCursor
-        endCursor
-        hasNextPage
-      }
-      nodes{
-        name
-        defaultAlias
-        owner {
-          id
-        }
-      }
-    }
-  }
-}
-```
-
-### 🔎 repositories (get repository ids)
-
-```graphql
-query get_all_repository_ids{
-  account{
-    repositories{
-      pageInfo{
-        startCursor
-        endCursor
-        hasNextPage
-      }
-      nodes{
+query get_all_repository_aliases($endCursor: String) {
+  account {
+    repositories(after: $endCursor) {
+      nodes {
         name
         defaultAlias
         id
+        owner {
+          id
+          name
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
       }
     }
   }
 }
 ```
+
 
 ### 🔎 rubric (categories and levels)
 
@@ -925,12 +874,19 @@ query services_by_filter{
 ### 🔎 services > query by tag
 
 ```graphql
-query services_by_tag {
+query services_by_tag($endCursor: String) {
   account {
-    services(tag: {key:"is_locked_by_opslevelyml" value: "true"}) {
+    services(
+      tag: {key: "is_locked_by_opslevelyml", value: "true"}
+      after: $endCursor
+    ) {
       nodes {
         name
         id
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
       }
     }
   }
@@ -940,9 +896,9 @@ query services_by_tag {
 ### 🔎 services > query for all opslevel.yml config errors
 
 ```graphql
-query get_all_service_opslevelyml_configErrors{
+query get_all_service_opslevelyml_configErrors($endCursor: String){
   account{
-    services{
+    services(after: $endCursor){
       nodes{
         name
         locked
@@ -950,6 +906,10 @@ query get_all_service_opslevelyml_configErrors{
           message
           sourceFilename
         }
+      }
+      pageInfo{
+        endCursor
+        hasNextPage
       }
     }
   }
@@ -1035,7 +995,11 @@ query get_all_service_opslevelyml_configErrors{
             "locked": false,
             "configErrors": null
           }
-        ]
+        ],
+        "pageInfo": {
+          "endCursor": "Njk",
+          "hasNextPage": false
+        }
       }
     }
   }
@@ -1046,9 +1010,9 @@ query get_all_service_opslevelyml_configErrors{
 ### 🔎 services > maturityReport > overallLevel (for all services)
 
 ```graphql
-query services_overallLevel_for_all {
+query services_overallLevel_for_all($endCursor: String) {
   account {
-    services {
+    services(after: $endCursor) {
       nodes {
         id
         maturityReport {
@@ -1057,6 +1021,10 @@ query services_overallLevel_for_all {
             name
           }
         }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
       }
     }
   }
@@ -1345,49 +1313,49 @@ query get_service_dependencies_and_dependents{
 {
   "data": {
     "account": {
-        "service": {
+      "service": {
         "name": "Shopping Cart Service",
         "dependencies": {
-            "edges": [
+          "edges": [
             {
-                "node": {
+              "node": {
                 "name": "Catalog Service"
-                },
-                "notes": "Disable rate-limiting in Catalog Service for Shopping Cart Service.\n\nDone!"
+              },
+              "notes": "Disable rate-limiting in Catalog Service for Shopping Cart Service.\n\nDone!"
             },
             {
-                "node": {
+              "node": {
                 "name": "Order Workflow Service"
-                },
-                "notes": null
+              },
+              "notes": null
             },
             {
-                "node": {
+              "node": {
                 "name": "Product Image Service"
-                },
-                "notes": null
+              },
+              "notes": null
             },
             {
-                "node": {
+              "node": {
                 "name": "Recommender 2.0"
-                },
-                "notes": "GraphQL api schema for Recommender 2.0 still in alpha and under development. Target Completion date: Q4-2022.\n\nDone!"
+              },
+              "notes": "GraphQL api schema for Recommender 2.0 still in alpha and under development. Target Completion date: Q4-2022.\n\nDone!"
             }
-            ]
+          ]
         },
         "dependents": {
-            "edges": [
+          "edges": [
             {
-                "node": {
+              "node": {
                 "name": "Website Aggregator"
-                },
-                "notes": "Move to using the GraphQL API in Q4"
+              },
+              "notes": "Move to using the GraphQL API in Q4"
             }
-            ]
+          ]
         }
-        }
+      }
     }
-    }
+  }
 }
 ```
 </details>
@@ -1395,13 +1363,17 @@ query get_service_dependencies_and_dependents{
 ### 🔎 service > documents (get documents for a specific service), get services first
 
 ```graphql
-query get_services{
+query get_services($endCursor: String){
   account{
-    services{
+    services(after: $endCursor){
       nodes{
         name
         id
         aliases
+      }
+      pageInfo{
+        endCursor
+        hasNextPage
       }
     }
   }
@@ -1521,13 +1493,17 @@ query get_check_results_for_a_service{
 ### 🔎 systems (get all)
 
 ```graphql
-query get_all_systems {
-  account{
-    systems {
-      nodes{
+query get_all_systems($endCursor: String) {
+  account {
+    systems(after: $endCursor) {
+      nodes {
         id
         name
         description
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
       }
     }
   }
@@ -1593,7 +1569,11 @@ query get_all_systems {
             "name": "Platform",
             "description": "Internal tooling for use by developers"
           }
-        ]
+        ],
+        "pageInfo": {
+          "endCursor": "NA",
+          "hasNextPage": false
+        }
       }
     }
   }
@@ -1604,37 +1584,40 @@ query get_all_systems {
 ### 🔎 teams (get all teams)
 
 ```graphql
-query get_all_teams{
-  account{
-    teams {
-      edges {
-        node {
-          id
-          alias
-          aliases
-          contacts {
-            id
-          }
-          members {
-              nodes{
+query get_all_teams($endCursor: String) {
+  account {
+    teams(after: $endCursor) {
+      nodes {
+        id
+        alias
+        aliases
+        contacts {
+          type
+          displayName
+          address
+        }
+        memberships {
+          nodes {
+            user {
+              id
               name
               email
             }
+            role
           }
-          manager {
-            id
-            name
-            email
-          }
-          responsibilities
         }
+        responsibilities
+      }
+      pageInfo{
+        endCursor
+        hasNextPage
       }
     }
   }
 }
 ```
 
-### 🔎 team > group info and contacts info
+### 🔎 team > parentTeam info
 
 ```graphql
 query get_team{
@@ -1642,16 +1625,9 @@ query get_team{
     team(alias: "devx"){
       id
       name
-      alias
-      aliases
-      group {
-        id
-      }
-      contacts {
-        id
-        address
-        displayName
-        type
+      parentTeam{
+        name
+        alias
       }
     }
   }
@@ -1668,12 +1644,10 @@ query get_team{
       "team": {
         "id": "Z2lkOi8vb3BzbGV2ZWwvVGVhbS8zMTE0",
         "name": "DevX",
-        "alias": "devx",
-        "aliases": [
-            "dev-x",
-            "devx"
-        ],
-        "group": null
+        "parentTeam": {
+          "name": "Engineering",
+          "alias": "engineering"
+        }
       }
     }
   }
@@ -1703,14 +1677,12 @@ query get_service_tiers_and_lifecycles{
 ### 🔎 users (get all users)
 
 ```graphql
-query get_users{
-  account{
-    users {
-      edges {
-        node {
-          id
-          email
-        }
+query get_users($endCursor: String) {
+  account {
+    users(after: $endCursor) {
+      nodes {
+        id
+        email
       }
     }
   }
