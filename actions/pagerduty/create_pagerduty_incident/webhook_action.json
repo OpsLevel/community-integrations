@@ -1,0 +1,12 @@
+{
+  "name": "Create PagerDuty Service Action",
+  "description": "Webhook action for Create PagerDuty Service",
+  "liquidTemplate": "{\n\t\"service\": {\n\t\t\"type\": \"service\",\n\t\t\"name\": \"{{ service.name }}\",\n\t\t\"description\": \"Provisioned from OpsLevel: https://app.opslevel.com{{ service.href }}\",\n\t\t\"auto_resolve_timeout\": null,\n\t\t\"acknowledgement_timeout\": null,\n\t\t\"status\": \"active\",\n\t\t\"escalation_policy\": {\n\t\t\t\"id\": \"{{ manualInputs.escalation }}\",\n\t\t\t\"type\": \"escalation_policy_reference\"\n\t\t},\n\t\t\"incident_urgency_rule\": {\n\t\t\t\"type\": \"constant\",\n\t\t\t\"urgency\":\"high\"\n\t\t},\n\t\t\"alert_creation\": \"create_alerts_and_incidents\",\n\t\t\"alert_grouping_parameters\": {\n\t\t\t\"type\": null\n\t\t}\n\t},\n\t\"auto_pause_notifications_parameters\": {\n\t\t\"enabled\": false\n\t}\n}",
+  "headers": {
+    "content-type": "application/json",
+    "accept": "application/vnd.pagerduty+json;version=2",
+    "authorization": "Token token={{ 'pagerduty_api_token' | secret }}"
+  },
+  "httpMethod": "POST",
+  "webhookUrl": "https://api.pagerduty.com/services"
+}
