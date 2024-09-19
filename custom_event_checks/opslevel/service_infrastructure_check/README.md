@@ -20,6 +20,7 @@ Requirements:
 
 * [RDS Certificate Expiration Check](#rds-certificate-expiration-check)
 * [PostgreSQL Extended Support Check](#postgresql-extended-support-check)
+* [MySQL Extended Support Check](#mysql-extended-support-check)
 
 ## RDS Certificate Expiration Check 
 
@@ -62,3 +63,23 @@ Check Failed Example
 Check Passed Example
 
 ![PostgreSQL Extended Support Check Passed Example Image](postgres_extended_support_check_pass_message.png)
+
+## MySQL Extended Support Check
+
+### Objective
+
+To create a Custom Event Check to ensure all services with related Aurora MySQL databases have up to date engine versions 8 or newer.
+
+### Custom Event Check config
+
+[aws-mysql-extended-support-check.yml](aws-mysql-extended-support-check.yml)
+
+### Result Examples
+
+Check Failed Example
+
+![MySQL Extended Support Check Failed Example Image](mysql_extended_support_check_fail_message.png)
+
+Check Passed Example
+
+![MySQL Extended Support Check Passed Example Image](mysql_extended_support_check_pass_message.png)
