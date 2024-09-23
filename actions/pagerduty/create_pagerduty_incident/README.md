@@ -31,8 +31,8 @@ The payload / customActionsExternalAction.liquidTemplate uses Liquid syntax:
         "type": "incident",
         "title": "{{manualInputs.IncidentTitle}}",
         "service": {
-        "id": "{{ service | tag_value: 'pd_id' }}",
-        "type": "service_reference"
+            "id": "{{ service | tag_value: 'pd_id' }}",
+            "type": "service_reference"
         },
         "body": {
         "type": "incident_body",
