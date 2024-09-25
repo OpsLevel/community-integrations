@@ -711,6 +711,56 @@ query get_all_repository_aliases($endCursor: String) {
 }
 ```
 
+### 🔎 repositories (compare owner and ownerAlias to confirm valid owners)
+
+When an owner alias is set in an opslevel.yml, it will be returned as `ownerAlias` in the API. If the `ownerAlias` is valid, the `owner` will also be set. If the `ownerAlias` is invalid, the `owner` will be null in the API.
+
+```graphql
+query repositories($endCursor: String){
+  account{
+    repositories(after: $endCursor){
+      nodes{
+        name
+        owner{
+          alias
+        }
+        ownerAlias
+      }
+      pageInfo{
+        endCursor
+        hasNextPage
+      }
+    }
+  }
+}
+```
+
+<details>
+  <summary>Usage with opslevel-cli expand to show</summary>
+
+The opslevel-cli command below will return a list of repositories by name that have an `ownerAlias` set but does not have a valid `owner`.
+
+```bash
+opslevel graphql --paginate -a=".account.repositories.nodes[]" -q='query repositories($endCursor: String){
+  account{
+    repositories(after: $endCursor){
+      nodes{
+        name
+        owner{
+          alias
+        }
+        ownerAlias
+      }
+      pageInfo{
+        endCursor
+        hasNextPage
+      }
+    }
+  }
+}' | jq '.[] | select(.ownerAlias != null and .owner == null) | .name'
+```
+
+</details>
 
 ### 🔎 rubric (categories and levels)
 
