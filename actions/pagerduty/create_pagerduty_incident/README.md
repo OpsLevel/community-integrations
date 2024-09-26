@@ -22,12 +22,12 @@ inputs:
     required: true
 ```
 The following headers to be included:
-
+```
 Content-Type: application/json
 Accept: application/vnd.pagerduty+json;version=2
 Authorization: Token <YOUR_TOKEN_HERE>
 From: <email>
-
+```
 The payload / customActionsExternalAction.liquidTemplate uses Liquid syntax:
 
 ```
