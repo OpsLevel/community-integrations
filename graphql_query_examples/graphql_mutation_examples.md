@@ -54,6 +54,114 @@ mutation aliasDelete_for_a_service{
 }
 ```
 
+### 🧬 awsIntegrationUpdate, get AWS integrations first, then reactivate integration if invalidated
+
+Note: `integrationReactivate` will reactivate the integration and OpsLevel will
+retry syncing resources on the next scheduled sync. This is only required if 
+the integration was invalidated (`invalidatedAt` is not null).
+
+```graphql
+query integrations_aws {
+  account {
+    integrations(type: "aws") {
+      nodes {
+        ... on AwsIntegration {
+          name
+          id
+          externalId
+          invalidatedAt
+          invalidatedReason
+          regionOverride
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    }
+  }
+}
+
+mutation awsIntegrationUpdate($awsIntegrationId: ID, $regionOverrideList: [String!]) {
+  awsIntegrationUpdate(
+    integration: {id: $awsIntegrationId}
+    input: {regionOverride: $regionOverrideList}
+  ) {
+    integration {
+      ... on AwsIntegration {
+        name
+        id
+        externalId
+        invalidatedAt
+        invalidatedReason
+        regionOverride
+      }
+    }
+    errors {
+      message
+      path
+    }
+  }
+}
+
+mutation integrationReactivate($awsIntegrationId: ID) {
+  integrationReactivate(integration: {id: $awsIntegrationId}) {
+    integration{
+      ... on AwsIntegration{
+        name
+        id
+        externalId
+        regionOverride
+      }
+    }
+    errors {
+      message
+      path
+    }
+  }
+}
+```
+
+Query Variables
+
+```json
+{
+  "awsIntegrationId": "Z2lkOi8vb3BzbGV2ZWwvSW50ZWdyYXRpb25zOjpBd3NJbnRlZ3JhdGlvbi81OT69",
+  "regionOverrideList": [
+    "af-south-1",
+    "ap-east-1",
+    "ap-northeast-1",
+    "ap-northeast-2",
+    "ap-northeast-3",
+    "ap-south-1",
+    "ap-south-2",
+    "ap-southeast-1",
+    "ap-southeast-2",
+    "ap-southeast-3",
+    "ap-southeast-4",
+    "ap-southeast-5",
+    "ca-central-1",
+    "ca-west-1",
+    "eu-central-1",
+    "eu-central-2",
+    "eu-north-1",
+    "eu-south-1",
+    "eu-south-2",
+    "eu-west-1",
+    "eu-west-2",
+    "eu-west-3",
+    "il-central-1",
+    "me-central-1",
+    "me-south-1",
+    "sa-east-1",
+    "us-east-1",
+    "us-east-2",
+    "us-west-1",
+    "us-west-2"
+  ]
+}
+```
+
 ### 🧬 deployDelete, get deploy ids first
 
 Use case: Delete a deploy that was sent as part of testing / POC. Delete a deploy with an environment that is no longer desired.
@@ -143,76 +251,6 @@ mutation enable_badge_for_service{
 ```
 </details>
 
-### 🧬 groupCreate (parent group, top level group)
-
-```graphql
-mutation create_Group_for_me_1{
-  groupCreate(input: {name: "Sales"}){
-    group{
-      id
-      name
-      description
-      parent {
-        id
-      }
-      members {
-        edges {
-          node {
-            id
-          }
-        }
-      }
-      childTeams {
-        edges {
-          node {
-            id
-          }
-        }
-      }
-    }
-  errors{
-    message
-    path
-    }
-  }
-}
-```
-
-### 🧬 groupCreate (a group within a group, subgroup), get groups first
-
-```graphql
-query get_Groups{
-  account{
-    groups{
-      nodes{
-        id
-        name
-        alias
-        parent {
-          id
-        }
-      }
-    }
-  }
-}
-
-mutation create_subGroup_for_me_1{
-  groupCreate(input: {name: "Sales Subgroup 1", parent:{alias: "Sales"}, teams:{alias: "Sales Team"}}){
-    group{
-      id
-      name
-      description
-      parent {
-        id
-      }
-    }
-  errors{
-    message
-    path
-    }
-  }
-}
-```
 
 ### 🧬 infrastructureResourceCreate
 
