@@ -54,9 +54,11 @@ mutation aliasDelete_for_a_service{
 }
 ```
 
-### 🧬 awsIntegrationUpdate, get AWS integrations first, then reactivate integration for next scheduled sync
+### 🧬 awsIntegrationUpdate, get AWS integrations first, then reactivate integration if invalidated
 
-Note: `integrationReactivate` will reactivate the integration and OpsLevel will retry syncing resources on the next scheduled sync.
+Note: `integrationReactivate` will reactivate the integration and OpsLevel will
+retry syncing resources on the next scheduled sync. This is only required if 
+the integration was invalidated (`invalidatedAt` is not null).
 
 ```graphql
 query integrations_aws {
@@ -67,8 +69,8 @@ query integrations_aws {
           name
           id
           externalId
-          createdAt
-          ownershipTagKeys
+          invalidatedAt
+          invalidatedReason
           regionOverride
         }
       }
@@ -88,6 +90,8 @@ mutation awsIntegrationUpdate($awsIntegrationId: ID, $regionOverrideList: [Strin
     integration {
       ... on AwsIntegration {
         name
+        id
+        externalId
         invalidatedAt
         invalidatedReason
         regionOverride
@@ -105,6 +109,8 @@ mutation integrationReactivate($awsIntegrationId: ID) {
     integration{
       ... on AwsIntegration{
         name
+        id
+        externalId
         regionOverride
       }
     }
