@@ -652,27 +652,37 @@ query gitlab_integrations{
 ```
 </details>
 
-### 🔎 payloads (for Custom Event Integrations)
+### 🔎 payloads (for Custom Event Integrations), get integrations first
 
-Note: This will return all CEC payloads in a single stream chronologically.
+Note: This will return all CEC payloads for the specified integration in a single stream chronologically.
 
 ```graphql
-query payloads_for_custom_event_integrations{
-  account{
-    payloads(sortBy:created_at_DESC, first: 50){
-      pageInfo{
-        startCursor
-        endCursor
+query integrations($endCursor: String) {
+  account {
+    integrations(after: $endCursor) {
+      nodes {
+        id
+        name
+        createdAt
+        type
       }
-      edges{
-        node{
-          integration {
-            id
-            name
-          }
-          data
-        }
-        cursor
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    }
+  }
+}
+
+query payloads_for_custom_event_integration {
+  account {
+    payloads(
+      sortBy: created_at_DESC
+      first: 50
+      filter: {key: integration_id, type: equals, arg: "Z2lkOi8vb3BzbGV2ZWwvSW50ZWdyYXRpb25zOjpTbGFja0ludGVncmF0aW9uLzEwNzM"}
+    ) {
+      nodes {
+        data
       }
     }
   }
