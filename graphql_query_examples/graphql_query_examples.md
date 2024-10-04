@@ -1200,6 +1200,50 @@ query get_results_for_list_of_checks {
 ```
 </details>
 
+### 🔎 services > query for all services with openapi docs
+
+If an OpenAPI doc is found for a service, the `preferredApiDocumentSource` 
+field will be set. Otherwise `preferredApiDocumentSource` will be null.
+
+```graphql
+query all_services_with_openapi_docs($endCursor: String) {
+  account {
+    services(after: $endCursor) {
+      nodes {
+        name
+        preferredApiDocumentSource
+      }
+      pageInfo{
+        endCursor
+        hasNextPage
+      }
+    }
+  }
+}
+```
+
+<details>
+  <summary>Usage with opslevel-cli expand to show</summary>
+The opslevel-cli command below will return a list of services by name that have `preferredApiDocumentSource` set.
+
+```bash
+opslevel graphql --paginate -a=".account.services.nodes[]" -q='query all_services_with_openapi_docs($endCursor: String) {
+  account {
+    services(after: $endCursor) {
+      nodes {
+        name
+        preferredApiDocumentSource
+      }
+      pageInfo{
+        endCursor
+        hasNextPage
+      }
+    }
+  }
+}' | jq '.[] | select(.preferredApiDocumentSource != null) | .name'
+```
+</details>
+
 ### 🔎 service (query for ”everything” for a specific service)
 
 ```graphql
