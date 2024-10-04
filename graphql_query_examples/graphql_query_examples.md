@@ -1211,9 +1211,12 @@ query all_services_with_openapi_docs($endCursor: String) {
     services(after: $endCursor) {
       nodes {
         name
-        preferredApiDocumentSource
+        preferredApiDocument {
+          id
+          content
+        }
       }
-      pageInfo{
+      pageInfo {
         endCursor
         hasNextPage
       }
@@ -1232,15 +1235,18 @@ opslevel graphql --paginate -a=".account.services.nodes[]" -q='query all_service
     services(after: $endCursor) {
       nodes {
         name
-        preferredApiDocumentSource
+        preferredApiDocument {
+          id
+          content
+        }
       }
-      pageInfo{
+      pageInfo {
         endCursor
         hasNextPage
       }
     }
   }
-}' | jq '.[] | select(.preferredApiDocumentSource != null) | .name'
+}' | jq '.[] | select(.preferredApiDocument.id != null and .preferredApiDocument.content != null) | .name'
 ```
 </details>
 
