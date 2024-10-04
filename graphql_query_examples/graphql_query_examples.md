@@ -1202,8 +1202,8 @@ query get_results_for_list_of_checks {
 
 ### 🔎 services > query for all services with openapi docs
 
-If an OpenAPI doc is found for a service, the `preferredApiDocumentSource` 
-field will be set. Otherwise `preferredApiDocumentSource` will be null.
+If an OpenAPI doc is found for a service, `preferredApiDocument.content` 
+field will be set. Otherwise `preferredApiDocument.content` will be null.
 
 ```graphql
 query all_services_with_openapi_docs($endCursor: String) {
@@ -1212,7 +1212,6 @@ query all_services_with_openapi_docs($endCursor: String) {
       nodes {
         name
         preferredApiDocument {
-          id
           content
         }
       }
@@ -1236,7 +1235,6 @@ opslevel graphql --paginate -a=".account.services.nodes[]" -q='query all_service
       nodes {
         name
         preferredApiDocument {
-          id
           content
         }
       }
@@ -1246,7 +1244,7 @@ opslevel graphql --paginate -a=".account.services.nodes[]" -q='query all_service
       }
     }
   }
-}' | jq '.[] | select(.preferredApiDocument.id != null and .preferredApiDocument.content != null) | .name'
+}' | jq '.[] | select(.preferredApiDocument.content != null) | .name'
 ```
 </details>
 
