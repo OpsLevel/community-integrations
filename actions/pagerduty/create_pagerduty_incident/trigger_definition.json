@@ -1,0 +1,17 @@
+{
+  "accessControl": "everyone",
+  "action": {
+    "id": "<ID>",
+    "name": "Create PagerDuty Incident Action"
+  },
+  "description": "Pages the on call.",
+  "filter": {
+    "id": "<ID>"
+  },
+  "manualInputsDefinition": "---\nversion: 1\ninputs:\n  - identifier: IncidentTitle\n    displayName: Title\n    description: Title of the incident to trigger\n    type: text_input\n    required: true\n    maxLength: 60\n    defaultValue: Service Incident Manual Trigger\n  - identifier: IncidentDescription\n    displayName: Incident Description\n    description: The description of the incident\n    type: text_area\n    required: true",
+  "name": "Pages the on call",
+  "owner": {
+    "id": "<ID>"
+  },
+  "responseTemplate": "{% if response.status >= 200 and response.status < 300 %}\n## Congratulations!\nYour request for {{ service.name }} has succeeded. See the incident here: {{response.body.incident.html_url}}\n{% else %}\n## Oops something went wrong\nPlease contact [{{ action_owner.name }}]({{ action_owner.href }}) for more help.\n{% endif %}"
+}

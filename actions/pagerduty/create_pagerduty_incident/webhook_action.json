@@ -1,0 +1,12 @@
+{
+  "name": "Create PagerDuty Service Action",
+  "description": "Webhook action for Create PagerDuty Service",
+  "liquidTemplate": "{\"service\": {\"type\": \"service\",\"name\": \"{{ service.name }}\",\"description\": \"Provisioned from OpsLevel: https://app.opslevel.com{{ service.href }}\",\"auto_resolve_timeout\": null,\"acknowledgement_timeout\": null,\"status\": \"active\",\"escalation_policy\": {\"id\": \"{{ manualInputs.escalation }}\",\"type\": \"escalation_policy_reference\"},\"incident_urgency_rule\": {\"type\": \"constant\",\"urgency\":\"high\"},\"alert_creation\": \"create_alerts_and_incidents\",\"alert_grouping_parameters\": {\"type\": null}},\"auto_pause_notifications_parameters\": {\"enabled\": false}}",
+  "headers": {
+    "content-type": "application/json",
+    "accept": "application/vnd.pagerduty+json;version=2",
+    "authorization": "Token token={{ 'pagerduty_api_token' | secret }}"
+  },
+  "httpMethod": "POST",
+  "webhookUrl": "https://api.pagerduty.com/services"
+}
