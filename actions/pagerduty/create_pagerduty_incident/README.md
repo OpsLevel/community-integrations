@@ -25,9 +25,11 @@ The following headers to be included:
 ```
 Content-Type: application/json
 Accept: application/vnd.pagerduty+json;version=2
-Authorization: Token <YOUR_TOKEN_HERE>
+Authorization: Token {{ '<secret_alias>' | secret }}
 From: <email>
 ```
+More details here,  https://docs.opslevel.com/docs/secrets, on using secrets with OpsLevel
+
 The payload / customActionsExternalAction.liquidTemplate uses Liquid syntax:
 
 ```
