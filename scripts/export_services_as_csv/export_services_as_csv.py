@@ -1,4 +1,5 @@
 import requests
+import os
 import pandas as pd
 
 # Replace with your GraphQL endpoint and set up the API token as an env variable
