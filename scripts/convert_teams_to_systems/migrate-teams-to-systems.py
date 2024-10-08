@@ -1,5 +1,6 @@
 import requests
 import json
+import os
 
 # Replace with your GraphQL endpoint and set up the API token as an env variable
 OPSLEVEL_API_TOKEN = os.environ["OPSLEVEL_API_TOKEN"]
