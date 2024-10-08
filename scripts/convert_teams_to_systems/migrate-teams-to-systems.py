@@ -1,9 +1,8 @@
 import requests
-import subprocess
 import json
 
-# Replace with your OpsLevel API token and GraphQL endpoint
-API_TOKEN = '<your API token>'
+# Replace with your GraphQL endpoint and set up the API token as an env variable
+OPSLEVEL_API_TOKEN = os.environ["OPSLEVEL_API_TOKEN"]
 GRAPHQL_ENDPOINT = 'https://api.opslevel.com/graphql'
 
 HEADERS = {
