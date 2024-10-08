@@ -12,5 +12,5 @@ Several examples on how to implement this can be found here.
 
 ## Example Code Written in Python and Flask
 
-[verify_opslevel_webhook_signature.py](verify_opslevel_webhook_signature.py)
+[verify_opslevel_webhook_signature.py](./python/verify_opslevel_webhook_signature.py)
 
