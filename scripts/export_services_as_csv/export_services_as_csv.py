@@ -1,8 +1,8 @@
 import requests
 import pandas as pd
 
-# Set your OpsLevel API endpoint and access token
-API_TOKEN = '<your API token>'
+# Replace with your GraphQL endpoint and set up the API token as an env variable
+OPSLEVEL_API_TOKEN = os.environ["OPSLEVEL_API_TOKEN"]
 url = 'https://api.opslevel.com/graphql'
 headers = {
     'Authorization':  f"Bearer {API_TOKEN}",
