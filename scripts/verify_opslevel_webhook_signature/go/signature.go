@@ -17,7 +17,7 @@ const (
 	HeaderTiming             = "X-OpsLevel-Timing"
 )
 
-// Search for opslevle signature
+// Search for OpsLevel signature
 func GetSignatureFromHeader(headers http.Header) (string, error) {
 	if headers[HeaderSignatureCanonical] == nil {
 		return "", fmt.Errorf("missing header '%s'", HeaderSignatureCanonical)

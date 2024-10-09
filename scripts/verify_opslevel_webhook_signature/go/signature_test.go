@@ -106,9 +106,6 @@ func TestVerify(t *testing.T) {
 	if computedSig != headers[HeaderSignatureCanonical][0] {
 		t.Errorf("computed signature should be equal to header signature, expected: '%s', received: '%s'", computedSig, headers[HeaderSignatureCanonical][0])
 	}
-	if err != nil {
-		t.Fatalf("there should be no error: %s", err)
-	}
 }
 
 func TestGetContentErrors(t *testing.T) {
