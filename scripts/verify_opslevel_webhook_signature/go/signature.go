@@ -17,7 +17,7 @@ const (
 	HeaderTiming             = "X-OpsLevel-Timing"
 )
 
-// Search for
+// Search for opslevle signature
 func GetSignatureFromHeader(headers http.Header) (string, error) {
 	if headers[HeaderSignatureCanonical] == nil {
 		return "", fmt.Errorf("missing header '%s'", HeaderSignatureCanonical)
@@ -25,6 +25,7 @@ func GetSignatureFromHeader(headers http.Header) (string, error) {
 	return headers[HeaderSignatureCanonical][0], nil
 }
 
+// Build the content to be signed
 func BuildContent(headers http.Header, additionalHeadersToKeep []string, body []byte) (string, error) {
 	if headers[HeaderTimingCanonical] == nil {
 		return "", fmt.Errorf("missing header '%s'", HeaderTimingCanonical)
@@ -45,6 +46,7 @@ func BuildContent(headers http.Header, additionalHeadersToKeep []string, body []
 	return fmt.Sprintf("%s+%s", h, string(body[:])), nil
 }
 
+// Verify that the content match the hmacSig.
 func Verify(content string, hmacSig string, secret string) (string, bool) {
 	mac := hmac.New(sha256.New, []byte(secret))
 	mac.Write([]byte(content))

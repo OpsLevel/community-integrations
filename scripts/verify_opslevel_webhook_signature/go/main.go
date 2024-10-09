@@ -11,7 +11,6 @@ var (
 )
 
 func main() {
-	// Handler function for the root path ("/")
 	http.HandleFunc("/webhook", func(w http.ResponseWriter, r *http.Request) {
 		hmacSig, err := GetSignatureFromHeader(r.Header)
 		if err != nil {
@@ -37,7 +36,6 @@ func main() {
 		fmt.Printf("Pyaload content: '%s'\n", content)
 	})
 
-	// Start the server listening on port 8080
 	fmt.Println("Server listening on http://localhost:8080/webhook")
 	fmt.Println("Execute this for testing\n\ncurl -H 'X-Opslevel-Timing: 123456' -H 'X-Opslevel-Signature: sha256=ee9eac178fe5cd260ff1d6f9fedcc409c6389ea5718ec44c8e266c6128770233' localhost:8080/webhook")
 	http.ListenAndServe(":8080", nil)
