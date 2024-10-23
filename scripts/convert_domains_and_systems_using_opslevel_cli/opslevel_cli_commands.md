@@ -20,37 +20,44 @@ Notes on converting Systems into services:
 
 # Steps and commands
 
-1. Backup systems and domains
+1. Backup systems and domains, replace <date-time> with the current date and time for uniqueness. e.g. systems_20241022-1636.json
 
 ```
-opslevel list systems -o json > systems_<filename>.json
-opslevel list domains -o json > domains_<filename>.json
+opslevel list systems -o json > systems_<date-time>.json
+opslevel list domains -o json > domains_<date-time>.json
 ```
 
 2.  Delete systems
 
 ```
-cat systems_<filename>.json | jq '.[] | .Id' | xargs -n1 opslevel delete system
+cat systems_<date-time>.json | jq '.[] | .Id' | xargs -n1 opslevel delete system
 ```
 
 3. Delete domains
 
 ```
-cat domains_<filename>.json | jq '.[] | .Id' | xargs -n1 opslevel delete domain
+cat domains_<date-time>.json | jq '.[] | .Id' | xargs -n1 opslevel delete domain
 ```
 
 4. Create domains into systems, preserve name, preserve owner, preserve description
 
 ```
-cat domains_<filename>.json | jq -c 'map({name: .Name, owner: {id: .Owner.OnTeam.id}, description: .Description}) | .[]' | while read -r item; do
+cat domains_<date-time>.json | jq -c 'map({name: .Name, owner: {id: .Owner.OnTeam.id}, description: .Description}) | .[]' | while read -r item; do
   echo "$item" | yq | opslevel create system
 done
 ```
 
-5. Create systems into services, add prefix "SEARCH-" to the name, preserve owner, preserve description, preserve link to domain (now a system)
+5. Create systems into services, preserve name, preserve owner, preserve description, preserve link to domain (now a system)
 
 ```
-cat systems_<filename>.json| jq -c 'map({name: ("SEARCH-" + .Name), owner: {id: .Owner.OnTeam.id}, description: .Description, parent: {alias: .Parent.Aliases[0]}}) | .[]' | while read -r item; do
+cat systems_<date-time>.json| jq -c 'map({name: .Name, owner: {id: .Owner.OnTeam.id}, description: .Description, parent: {alias: .Parent.Aliases[0]}}) | .[]' | while read -r item; do
+  echo "$item" | yq | opslevel create service
+done
+```
+
+Optionally, you can add additional data if needed. For example, adding prefix "SEARCH-" to the name.
+```
+cat systems_<date-time>.json| jq -c 'map({name: ("SEARCH-" + .Name), owner: {id: .Owner.OnTeam.id}, description: .Description, parent: {alias: .Parent.Aliases[0]}}) | .[]' | while read -r item; do
   echo "$item" | yq | opslevel create service
 done
 ```
