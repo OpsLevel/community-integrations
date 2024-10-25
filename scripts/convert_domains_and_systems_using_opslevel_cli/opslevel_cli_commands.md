@@ -8,7 +8,8 @@ Notes on converting domains into systems:
 * Description will be preserved
 
 Notes on converting Systems into services:
-* System names will be prefixed with "SEARCH-"
+* System names will be preserved
+  * Optionally: System names will be prefixed with "SEARCH-"
 * Owner will be preserved
 * Description will be preserved
 * Link to new system (previously domain) will be preserved
