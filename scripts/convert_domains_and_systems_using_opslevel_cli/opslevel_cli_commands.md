@@ -16,7 +16,9 @@ Notes on converting Systems into services:
 # Requirements
 
 * opslevel-cli installed https://github.com/OpsLevel/cli
-* Ensure that the domains and systems only have 1 alias defined (the alias should be indicated as locked in the UI)
+* jq https://stedolan.github.io/jq/
+* yq https://github.com/mikefarah/yq
+* Ensure that the domains only have 1 alias defined (the alias should be indicated as locked in the UI)
 
 # Steps and commands
 
@@ -41,13 +43,25 @@ cat domains_<date-time>.json | jq '.[] | .Id' | xargs -n1 opslevel delete domain
 
 4. Create domains into systems, preserve name, preserve owner, preserve description
 
+**On MacOS**
+
 ```
-cat domains_<date-time>.json | jq -c 'map({name: .Name, owner: {id: .Owner.OnTeam.id}, description: .Description}) | .[]' | while read -r item; do
+cat domains_<date-time>.json | jq -c 'map({name: .Name, ownerId: .Owner.OnTeam.id, description: .Description}) | .[]' | while read -r item; do
   echo "$item" | yq | opslevel create system
 done
 ```
 
+**On Linux**
+
+```
+cat domains_<date-time>.json | jq -c 'map({name: .Name, ownerId: .Owner.OnTeam.id, description: .Description}) | .[]' | while read -r item; do
+  echo "$item" | yq eval | opslevel create system
+done
+```
+
 5. Create systems into services, preserve name, preserve owner, preserve description, preserve link to domain (now a system)
+
+**On MacOS**
 
 ```
 cat systems_<date-time>.json| jq -c 'map({name: .Name, owner: {id: .Owner.OnTeam.id}, description: .Description, parent: {alias: .Parent.Aliases[0]}}) | .[]' | while read -r item; do
@@ -55,9 +69,28 @@ cat systems_<date-time>.json| jq -c 'map({name: .Name, owner: {id: .Owner.OnTeam
 done
 ```
 
+**On Linux**
+
+```
+cat systems_<date-time>.json| jq -c 'map({name: .Name, owner: {id: .Owner.OnTeam.id}, description: .Description, parent: {alias: .Parent.Aliases[0]}}) | .[]' | while read -r item; do
+  echo "$item" | yq eval | opslevel create service
+done
+```
+
 Optionally, you can add additional data if needed. For example, adding prefix "SEARCH-" to the name.
+
+**On MacOS**
+
 ```
 cat systems_<date-time>.json| jq -c 'map({name: ("SEARCH-" + .Name), owner: {id: .Owner.OnTeam.id}, description: .Description, parent: {alias: .Parent.Aliases[0]}}) | .[]' | while read -r item; do
   echo "$item" | yq | opslevel create service
+done
+```
+
+**On Linux**
+
+```
+cat systems_<date-time>.json| jq -c 'map({name: ("SEARCH-" + .Name), owner: {id: .Owner.OnTeam.id}, description: .Description, parent: {alias: .Parent.Aliases[0]}}) | .[]' | while read -r item; do
+  echo "$item" | yq eval | opslevel create service
 done
 ```
