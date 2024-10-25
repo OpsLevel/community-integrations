@@ -719,7 +719,97 @@ mutation delete_aws_integration{
 }
 ```
 </details>
-    
+
+### 🧬 propertyAssign (assign a value to a service's custom property), get all propertyDefinitions and services first
+
+```graphql
+query get_all_custom_property_definitions($endCursor: String) {
+  account {
+    propertyDefinitions(after: $endCursor) {
+      nodes {
+        id
+        name
+        alias
+        description
+        schema
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    }
+  }
+}
+
+query get_all_services($endCursor: String) {
+  account {
+    services(after: $endCursor) {
+      nodes {
+        id
+        name
+        aliases
+        properties {
+          nodes {
+            definition {
+              name
+            }
+            value
+          }
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    }
+  }
+}
+
+mutation propertyAssign_for_a_service($owner: IdentifierInput!, $definition: IdentifierInput!, $value: JsonString!, $runValidation: Boolean) {
+  propertyAssign(
+    input: {owner: $owner, definition: $definition, value: $value, runValidation: $runValidation}
+  ) {
+    property {
+      definition {
+        id
+        name
+      }
+      value
+      validationErrors {
+        message
+        path
+      }
+      owner {
+        ... on Service {
+          id
+          name
+        }
+      }
+    }
+    errors {
+      message
+      path
+    }
+  }
+}
+```
+
+Query variables:
+
+```json
+{
+  "owner": {
+    "id": "Z2lkOi8vb3BzbGV2ZWwvU2VydmljZS82MzA3Mg",
+    "alias": "shopping_cart"
+  },
+  "definition": {
+    "id": "Z2lkOi8vb3BzbGV2ZWwvUHJvcGVydGllczo6RGVmaW5pdGlvbi81OTU",
+    "alias": "is_public"
+  },
+  "value": "false"
+}
+```
+
 
 ### 🧬 relationshipCreate, get all service/infrastructure/system ids first
 
