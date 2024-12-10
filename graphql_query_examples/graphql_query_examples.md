@@ -697,6 +697,46 @@ query get_opslevel_public_ips {
 }
 ```
 
+### 🔎 repositories > all
+
+```graphql
+query get_repositories($endCursor: String) {
+  account {
+    repositories(after: $endCursor) {
+      nodes {
+        name
+        defaultAlias
+        id
+        url
+        organization
+        owner {
+          id
+          name
+        }
+        lastOwnerChangedAt
+        tier{
+          id
+          name
+        }
+        defaultBranch
+        forked
+        locked
+        tags{
+          nodes{
+            key
+            value
+          }
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    }
+  }
+}
+```
+
 ### 🔎 repositories (get repository aliases and ids)
 
 ```graphql
