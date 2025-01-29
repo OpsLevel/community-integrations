@@ -7,7 +7,9 @@ With this integration, you can also create **custom checks** in OpsLevel to ensu
 ---
 
 ## **Features**
-- Fetches Dependabot alerts for a repository using the GitHub API.
+- [List Dependabot alerts for a repository](https://docs.github.com/en/rest/dependabot/alerts?apiVersion=2022-11-28#list-dependabot-alerts-for-a-repository) using the GitHub API. Update the API request as needed to use
+    - [List Dependabot alerts for an enterprise](https://docs.github.com/en/rest/dependabot/alerts?apiVersion=2022-11-28#list-dependabot-alerts-for-an-enterprise)
+    - [List Dependabot alerts for an organization](https://docs.github.com/en/rest/dependabot/alerts?apiVersion=2022-11-28#list-dependabot-alerts-for-an-organization)
 - Processes the alerts and groups them by severity (e.g., `critical`, `high`, `medium`).
 - Sends the processed data to OpsLevel's custom event integration endpoint.
 - Supports custom OpsLevel checks to monitor and validate vulnerabilities.
