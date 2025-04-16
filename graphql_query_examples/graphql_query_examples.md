@@ -902,10 +902,10 @@ query get_services($endCursor: String) {
 ### 🔎 services > query by filter (get filters first)
 
 ```graphql
-query filters{
-  account{
-    filters{
-      nodes{
+query filters($endCursor: String) {
+  account {
+    filters(after: $endCursor) {
+      nodes {
         name
         id
         connective
@@ -915,16 +915,27 @@ query filters{
         }
         htmlUrl
       }
+      pageInfo{
+        endCursor
+        hasNextPage
+      }
     }
   }
 }
 
-query services_by_filter{
-  account{
-    services(filterIdentifier:{id: "Z2lkOi8vb3BzbGV2ZWwvRmlsdGVyLzg1NA"}){
-      nodes{
+query services_by_filter($endCursor: String) {
+  account {
+    services(
+      filterIdentifier: {id: "Z2lkOi8vb3BzbGV2ZWwvRmlsdGVyLzIwNjg"}
+      after: $endCursor
+    ) {
+      nodes {
         name
         id
+      }
+      pageInfo{
+        endCursor
+        hasNextPage
       }
     }
   }
@@ -1094,27 +1105,25 @@ query services_overallLevel_for_all($endCursor: String) {
 ### 🔎 services > maturityReport > latestCheckResults (show results for a check and all matching services)
 
 ```graphql
-query get_checks_by_id_only{
-  account{
-    rubric{
-      checks {
-        edges {
-          node {
-            id
-            name
-          }
+query get_checks_id_and_name($endCursor: String) {
+  account {
+    rubric {
+      checks(after: $endCursor) {
+        nodes {
+          id
+          name
         }
       }
     }
   }
 }
 
-query get_results_for_list_of_checks {
+query get_results_for_list_of_checks($endCursor: String) {
   account {
-    services {
+    services(after: $endCursor) {
       nodes {
         maturityReport {
-          latestCheckResults (ids: ["Z2lkOi8vb3BzbGV2ZWwvQ2hlY2tzOjpSZXBvRmlsZS8zNjQy"]) {
+          latestCheckResults(ids: ["Z2lkOi8vb3BzbGV2ZWwvQ2hlY2tzOjpIYXNPd25lci8zNjQz"]) {
             check {
               id
             }
