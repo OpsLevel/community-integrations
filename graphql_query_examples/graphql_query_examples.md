@@ -298,6 +298,53 @@ query deploys_just_for_shopping_cart($endCursor:String) {
 ```
 </details>
 
+### 🔎 domains > all
+
+```graphql
+query get_domains($endCursor: String) {
+  account {
+    domains(after: $endCursor) {
+      nodes {
+        id
+        name
+        aliases
+        owner{
+          ... on Team{
+            id
+            name
+          }
+        }
+        description
+        childSystems {
+          nodes {
+            id
+            name
+          }
+          pageInfo {
+            hasNextPage
+            endCursor
+          }
+        }
+        descendantServices {
+          nodes {
+            id
+            name
+          }
+          pageInfo {
+            hasNextPage
+            endCursor
+          }
+        }
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+    }
+  }
+}
+```
+
 ### 🔎 filters
 
 ```graphql
