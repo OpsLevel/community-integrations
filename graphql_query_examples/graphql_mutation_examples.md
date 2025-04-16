@@ -720,18 +720,28 @@ mutation delete_aws_integration{
 ```
 </details>
 
-### 🧬 propertyAssign (assign a value to a service's custom property), get all propertyDefinitions and services first
+### 🧬 propertyAssign (assign a value to a service/component custom property), get all propertyDefinitions and services first
 
 ```graphql
-query get_all_custom_property_definitions($endCursor: String) {
+query get_all_properties_for_each_componentTypes {
   account {
-    propertyDefinitions(after: $endCursor) {
+    componentTypes {
       nodes {
         id
         name
-        alias
-        description
-        schema
+        properties {
+          nodes {
+            id
+            name
+            alias
+            description
+            schema
+          }
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
+        }
       }
       pageInfo {
         endCursor
@@ -765,9 +775,10 @@ query get_all_services($endCursor: String) {
   }
 }
 
-mutation propertyAssign_for_a_service($owner: IdentifierInput!, $definition: IdentifierInput!, $value: JsonString!, $runValidation: Boolean) {
+# boolean, see query variables below for boolean example
+mutation propertyAssign_boolean($owning_object_id: ID, $owning_object_alias: String, $property_definition_id: ID, $property_definition_alias: String, $property_value: JsonString!, $runValidation: Boolean) {
   propertyAssign(
-    input: {owner: $owner, definition: $definition, value: $value, runValidation: $runValidation}
+    input: {owner: {id: $owning_object_id, alias: $owning_object_alias}, definition: {id: $property_definition_id, alias: $property_definition_alias}, value: $property_value, runValidation: $runValidation}
   ) {
     property {
       definition {
@@ -792,21 +803,54 @@ mutation propertyAssign_for_a_service($owner: IdentifierInput!, $definition: Ide
     }
   }
 }
+
+# string, see query variables below for string example
+mutation propertyAssign_string($owning_object_id: ID, $owning_object_alias: String, $property_definition_id: ID, $property_definition_alias: String, $property_value: JsonString!, $runValidation: Boolean) {
+  propertyAssign(
+    input: {owner: {id: $owning_object_id, alias: $owning_object_alias}, definition: {id: $property_definition_id, alias: $property_definition_alias}, value: $property_value, runValidation: $runValidation}
+  ) {
+    property {
+      owner {
+        ... on Service {
+          name
+        }
+      }
+      definition {
+        ... on PropertyDefinition {
+          name
+        }
+      }
+      value
+      validationErrors {
+        message
+        path
+      }
+    }
+    errors {
+      message
+      path
+    }
+  }
+}
 ```
 
 Query variables:
 
 ```json
+# boolean
 {
-  "owner": {
-    "id": "Z2lkOi8vb3BzbGV2ZWwvU2VydmljZS82MzA3Mg",
-    "alias": "shopping_cart"
-  },
-  "definition": {
-    "id": "Z2lkOi8vb3BzbGV2ZWwvUHJvcGVydGllczo6RGVmaW5pdGlvbi81OTU",
-    "alias": "is_public"
-  },
-  "value": "false"
+  "owning_object_alias": "shopping_cart",
+  "property_definition_alias": "publicly_routable",
+  "property_value": "true",
+  "runValidation": true
+}
+
+# string
+{
+  "owning_object_alias": "shopping_cart",
+  "property_definition_alias": "service_cost_last_30_days",
+  "property_value": "\"$15,000\"",
+  "runValidation": true
 }
 ```
 
