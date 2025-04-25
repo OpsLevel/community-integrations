@@ -3,7 +3,7 @@ version: 1
 kind: generic
 spec:
   name: AWS Postgres Extended Support Check
-  serviceSelector: ".[] | .name"
+  serviceSelector: ".[] | .aliases[0]"
   successCondition: '[.[] | select(.name == $ctx.alias) | .relatedResources.nodes[]
     | select(.type == "Database") | select(.rawData.engine == "aurora-postgresql")
     | (.rawData.engine_version | tonumber) >= 12 ] | all'
