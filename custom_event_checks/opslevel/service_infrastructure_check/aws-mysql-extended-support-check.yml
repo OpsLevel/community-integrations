@@ -6,7 +6,7 @@ spec:
   serviceSelector: ".[] | .aliases[0]"
   successCondition: |-
     def semver($i): $i | [splits("[.-]") | tonumber? // .];
-    [.[] | select(.name == $ctx.alias) | .relatedResources.nodes[] | select(.type == "Database") | select(.rawData.engine == "aurora-mysql") | (.rawData.engine_version | split(".mysql_aurora.")) | ((.[0]|tonumber) == 8.0) and (semver(.[1]) >= semver("3.05.2")) ] | all
+    [.[] | select(.aliases | any(. == $ctx.alias)) | .relatedResources.nodes[] | select(.type == "Database") | select(.rawData.engine == "aurora-mysql") | (.rawData.engine_version | split(".mysql_aurora.")) | ((.[0]|tonumber) == 8.0) and (semver(.[1]) >= semver("3.05.2")) ] | all
   message: |
     {% if check.passed %}
       ### Check passed

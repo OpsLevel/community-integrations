@@ -4,7 +4,7 @@ kind: generic
 spec:
   name: AWS Postgres Extended Support Check
   serviceSelector: ".[] | .aliases[0]"
-  successCondition: '[.[] | select(.name == $ctx.alias) | .relatedResources.nodes[]
+  successCondition: '[.[] | select(.aliases | any(. == $ctx.alias)) | .relatedResources.nodes[]
     | select(.type == "Database") | select(.rawData.engine == "aurora-postgresql")
     | (.rawData.engine_version | tonumber) >= 12 ] | all'
   message: "{% if check.passed %}\n  ### Check passed\n  \U0001F389 Congratulations!
