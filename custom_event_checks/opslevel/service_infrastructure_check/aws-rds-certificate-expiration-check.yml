@@ -4,7 +4,7 @@ kind: generic
 spec:
   name: AWS RDS Certificate Expiration Check
   serviceSelector: ".[] | .aliases[0]"
-  successCondition: '[.[] | select(.aliases[0] == $ctx.alias) | .relatedResources.nodes[]
+  successCondition: '[.[] | select(.aliases | any(. == $ctx.alias)) | .relatedResources.nodes[]
     | select(.type == "Database") | .rawData | (.ca_certificate_identifier == "rds-ca-rsa2048-g1"
     or .ca_certificate_identifier == "rds-ca-rsa4096-g1" or .ca_certificate_identifier
     == "rds-ca-ecc384-g1")]| all'
