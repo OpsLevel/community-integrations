@@ -22,7 +22,7 @@ LIST_COMPONENT_TYPES_QUERY = """
 """
 
 LIST_COMPONENT_TYPE_PROPERTIES_QUERY = """
-    query componentTypes_properties($componentTypeID: ID, $componentTypeAlias: String, $endCursor: String) {
+    query componentType_properties($componentTypeID: ID, $componentTypeAlias: String, $endCursor: String) {
       account {
         componentType(input: {id: $componentTypeID, alias: $componentTypeAlias}) {
           id
@@ -48,8 +48,8 @@ LIST_COMPONENT_TYPE_PROPERTIES_QUERY = """
    }
 """
 
-PROPERTY_DEFINIITION_CREATE_MUTATION = """
-    mutation propertyDefinitionCreate($componentTypeID:ID, $componentTypeAlias:String, $properties:[ComponentTypePropertyDefinitionInput!]){
+COMPONENT_TYPE_UPDATE_MUTATION = """
+    mutation componentTypeUpdate($componentTypeID:ID, $componentTypeAlias:String, $properties:[ComponentTypePropertyDefinitionInput!]){
       componentTypeUpdate(componentType: {id: $componentTypeID, alias:$componentTypeAlias}, input:{properties:$properties}){
         componentType{
           id
@@ -137,7 +137,7 @@ def create_or_update_properties(component_type_id, properties):
     ]
 
     response = opslevel_graphql_query(
-        PROPERTY_DEFINIITION_CREATE_MUTATION,
+        COMPONENT_TYPE_UPDATE_MUTATION,
         variables={
             "componentTypeID": component_type_id,
             "properties": property_inputs,
