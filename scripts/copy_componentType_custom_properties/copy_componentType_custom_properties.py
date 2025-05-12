@@ -1,6 +1,5 @@
 import os
 import requests
-import json
 
 OPSLEVEL_API_TOKEN = os.environ["OPSLEVEL_API_TOKEN"]
 OPSLEVEL_ENDPOINT = "https://app.opslevel.com/graphql"
