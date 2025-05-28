@@ -31,10 +31,20 @@ To use this integration, you need:
     *   Ensure you have a custom property defined in OpsLevel. The example script uses the alias `"aws_cost"`. This property will store the cost value for each service. The property value is stored as a JSON string in OpsLevel.
 
 3.  **Configure Script Parameters:**
-    *   In the `if __name__ == "__main__":` block, configure:
-        *   `api_url`: The URL for your OpsLevel GraphQL API (e.g., `'https://api.opslevel.com/graphql'`).
-        *   `definition_alias`: The alias of the custom property definition in OpsLevel (e.g., `"aws_cost"`).
-        *   `start_date` and `end_date`: The date range for fetching cost data from CloudZero, in ISO 8601 format (e.g., `"2025-05-01T00:00:00Z"`).
+    *   Adjust the config dictionary within the main() function to match your requirements:
+
+    ```
+    config = {
+        'opslevel_api_url': 'https://api.opslevel.com/graphql',  # Your OpsLevel GraphQL API URL
+        'opslevel_token_env_var': "OPSLEVEL_API_TOKEN", # Environment variable for OpsLevel API token
+        'opslevel_definition_alias': "aws_cost", # Alias of the OpsLevel property definition (e.g., "aws_cost")
+        'cloudzero_api_key_env_var': "CLOUDZERO_API_KEY", # Environment variable for CloudZero API key
+        'cloudzero_start_date': "2025-05-01T00:00:00Z", # Start date for CloudZero costs (ISO 8601 format)
+        'cloudzero_end_date': "2025-05-09T00:00:00Z",  # End date for CloudZero costs (ISO 8601 format)
+        'cloudzero_granularity': "daily", # Granularity for CloudZero costs ("daily", "monthly")
+        'cloudzero_cost_type': "real_cost" # Cost type for CloudZero costs ("real_cost", "amortized_cost")
+    }
+    ```
 
 ## Script Usage
 
@@ -44,7 +54,7 @@ To use this integration, you need:
     ```
 2.  **Run the Script:**
     ```bash
-    python your_script_name.py
+    python get_cloudzero_billing_costs.py
     ```
 
 The script will fetch data from CloudZero, process it, and attempt to update the specified custom property on services in OpsLevel whose aliases match the "Tag:Name" value from CloudZero.
