@@ -21,13 +21,14 @@ Both stages are configured in YAML, requiring no coding and allowing for configu
 You'll need to define a new component type in OpsLevel to represent your Jira tickets.
 
 1.  **Navigate to Component Types**: In OpsLevel, go to **Settings > Component Types**.
-2.  **Create New Component Type**: Select **+ New Component Type**.
+2.  **Create New Component Type**: Select **+ New Component Type**. [Documentation](https://docs.opslevel.com/docs/components)
 3.  **Define "Jira Ticket" Component Type**:
     *   **Display Name**: Enter `Jira Ticket`.
     *   **Identifier**: The identifier will be auto-generated; you can keep it or change it.
     *   **Description**: Provide helper text (e.g., "Used to track Jira tickets related to services and teams in OpsLevel").
     *   **Customize Icon** (Optional): You can customize the icon for this component type.
     *   Press **Save**.
+    ![Jira Ticket](images/jira-ticket-component-type.png)
 4.  **Define Custom Properties**: On the Component Edit Page, define the following custom properties:
     *   **Name**: Type `Text` (String).
     *   **Summary**: Type `Text` (String).
@@ -35,6 +36,7 @@ You'll need to define a new component type in OpsLevel to represent your Jira ti
     *   **Team Name**: Type `Text` (String). This property will be mapped from a custom field for "Team" in Jira.
     *   **Service Name**: Type `Text` (String). This property will be mapped from a custom field for "Service" in Jira.
     *   **Display Status**: For `Team Name` and `Service Name`, consider hiding them if they are primarily used for mapping relationships and not necessary for direct display to component owners.
+    ![Custom Property](images/custom-property.png)
 5.  **Define Custom Relationships**: Establish relationships to link Jira tickets to existing services and teams in OpsLevel:
     *   **Associated Service**:
         *   **Display Name**: `Associated Service`.
@@ -46,7 +48,7 @@ You'll need to define a new component type in OpsLevel to represent your Jira ti
         *   **Identifier**: `associated_team`.
         *   **Allowed Types**: Select `Team`.
         *   **Management Rule**: Set a rule to associate the Jira ticket to a team based on the `Team Name` property. For example, `Jira Ticket` `Team Name` `equals` `Team` `Name`.
-
+![Relationship Management](images/relationship-association.png)
 ### Step 2: Create a Secret in OpsLevel for Jira Authentication
 
 You'll need a secret to store your Jira API token for authentication.
@@ -139,7 +141,7 @@ After configuring both definitions, you can test and activate your integration.
 2.  **Save Configuration**: Save your Extraction and Transform Definitions.
 3.  **Observe Components**: Once the sync completes, you will see your Jira tickets appear as new `Jira Ticket` components in your OpsLevel catalog.
     *   **Managed Properties**: Properties managed by the integration (e.g., Status, Summary) will be **locked** and cannot be updated directly from the OpsLevel UI or API; updates must come via the integration itself.
-    *   **Relationships**: The relationships you defined (Associated Service, Associated Team) will be automatically established. For instance, looking at a Service or Team component will show the inverse relationship, listing associated Jira tickets.
+    *   **Relationships**: The relationships you defined (Associated Service, Associated Team) will be automatically established. For instance, looking at a Service or Team component will show the inverse relationship, listing associated Jira tickets. [Documentation](https://docs.opslevel.com/docs/mapping-integration-data-to-custom-properties)
 
 ---
 
