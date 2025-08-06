@@ -117,7 +117,7 @@ The transformation definition maps the extracted Jira data to your OpsLevel comp
           name: ".id"
           summary: ".fields.summary"
           status: ".fields.statusCategory.name"
-          team_name: ".fields.<custom field name in Jira>.name" # Example customfield_10001
+          team_name: ".fields.<custom field name in Jira>.name" # Example customfield_10001. These field names can also be identified by running the test and inspecting the raw data
           service_name: ".fields.<custom field name in Jira>" # Example customfield_10070
     ```
     *   **`external_kind: jira_ticket`**: This must match the `external_kind` defined in your extraction definition to ensure the correct data is processed.
@@ -145,5 +145,5 @@ After configuring both definitions, you can test and activate your integration.
 
 ## Important Considerations
 
-*   **JQ Expressions**: The system relies on JQ expressions for data extraction and transformation. Leverage JQ for transformations.
+*   **JQ Expressions**: The system relies on JQ expressions for data extraction and transformation. Leverage [JQ](https://jqlang.org/manual/v1.6/) for transformations.
 *   **Filtering Data**: For large datasets like Jira tickets, utilize the `exclude` parameter in the extraction definition to filter out unwanted data, preventing the catalog from becoming overloaded. Leverage the Jira API parameters for filtering.
