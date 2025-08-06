@@ -82,13 +82,13 @@ The extraction definition specifies how OpsLevel will pull data from Jira.
           method: GET
           url: https://<yourdomain>.atlassian.net/rest/api/3/search/jql?jql=status%20IN%20(%22To%20Do%22%2C%20%22IN%20PROGRESS%22)&maxResults=50&fields=customfield_10001%2Ccustomfield_10070%2CstatusCategory%2Csummary&startAt={{ cursor }}
           headers:
-            - name: Accept
-              value: application/json
-            - name: Authorization
-              value: "{{ 'jira_basic_auth_header' | secret }}"
-            next_cursor:
+          - name: Accept
+            value: application/json
+          - name: Authorization
+            value: "{{ 'jira_basic_auth_header' | secret }}"
+          next_cursor:
             from: payload
-            value: if .issues == [] then null else (.startAt + .maxResults)|tostring end              
+            value: if .issues == [] then null else (.startAt + .maxResults)|tostring end             
     ```
     *   **`external_kind: jira_ticket`**: A unique identifier for the type of data being extracted.
     *   **`iterator: ".issues"`**: This JQ expression tells OpsLevel to iterate over each item in the "issues" array within the Jira API response, treating each as an individual object.
@@ -114,11 +114,11 @@ The transformation definition maps the extracted Jira data to your OpsLevel comp
         opslevel_kind: jira_ticket
         opslevel_identifier: ".key"
         properties:
-          name: ".fields.summary"
+          name: ".id"
           summary: ".fields.summary"
           status: ".fields.statusCategory.name"
-          team_name: ".fields.customfield_10001.name"
-          service_name: ".fields.customfield_10070"
+          team_name: ".fields.<custom field name in Jira>.name" # Example customfield_10001
+          service_name: ".fields.<custom field name in Jira>" # Example customfield_10070
     ```
     *   **`external_kind: jira_ticket`**: This must match the `external_kind` defined in your extraction definition to ensure the correct data is processed.
     *   **`on_component_not_found: create`**: Specifies that if an OpsLevel component matching the `opslevel_identifier` is not found, a new component should be created. Other options include `skip` or `suggest`.
@@ -137,8 +137,7 @@ After configuring both definitions, you can test and activate your integration.
 
 1.  **Run Test**: Use the "Run Test" feature within the custom integration interface. This will execute the API call to Jira, return the actual payload, and allow you to inspect the data, verifying how it maps to properties and which new components will be created.
 2.  **Save Configuration**: Save your Extraction and Transform Definitions.
-3.  **Enable Sync**: Ensure the integration sync is enabled. OpsLevel will automatically pull data daily by default, or you can manually kick off a sync. You can also schedule the sync to run every 1 hour.
-4.  **Observe Components**: Once the sync completes, you will see your Jira tickets appear as new `Jira Ticket` components in your OpsLevel catalog.
+3.  **Observe Components**: Once the sync completes, you will see your Jira tickets appear as new `Jira Ticket` components in your OpsLevel catalog.
     *   **Managed Properties**: Properties managed by the integration (e.g., Status, Summary) will be **locked** and cannot be updated directly from the OpsLevel UI or API; updates must come via the integration itself.
     *   **Relationships**: The relationships you defined (Associated Service, Associated Team) will be automatically established. For instance, looking at a Service or Team component will show the inverse relationship, listing associated Jira tickets.
 
