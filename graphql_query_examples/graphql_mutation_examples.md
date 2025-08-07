@@ -162,6 +162,68 @@ Query Variables
 }
 ```
 
+### 🧬 customActionsTriggerInvoke, get action ids and component ids first
+
+Use case: Trigger custom actions via API
+
+```graphql
+# Use with query variables below
+query components($endCursor: String) {
+  account {
+    services(after: $endCursor) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+      nodes {
+        id
+        name
+      }
+    }
+  }
+}
+
+query actions($endCursor: String) {
+  account {
+    customActionsTriggerDefinitions(after: $endCursor) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+      nodes {
+        id
+        name
+      }
+    }
+  }
+}
+
+mutation customActionsTriggerInvoke($triggerDefinitionID: ID, $targetObjectID: ID) {
+  customActionsTriggerInvoke(
+    input: {triggerDefinition: {id: $triggerDefinitionID}, targetObject: {id: $targetObjectID}}
+  ) {
+    triggerEvent {
+      id
+      result
+      response
+    }
+    errors {
+      message
+      path
+    }
+  }
+}
+```
+
+Query variables:
+
+```json
+{
+  "triggerDefinitionID": "Z2lkOi8vb3BzbGV2ZWwvQ3VzdG9tQWN0aW9uczo6VHJpZ2dlckRlZmluaXRpb24vNDIw",
+  "targetObjectID": "Z2lkOi8vb3BzbGV2ZWwvU2VydmljZS8yNDY1OTM"
+}
+```
+
 ### 🧬 deployDelete, get deploy ids first
 
 Use case: Delete a deploy that was sent as part of testing / POC. Delete a deploy with an environment that is no longer desired.
