@@ -6,7 +6,7 @@ This README provides a step-by-step guide to setting up a custom integration map
 
 OpsLevel's custom integration system supports two patterns:
 *   **Push Integrations**: Where external systems send data directly to OpsLevel via webhooks.
-*   **Pull Integrations**: Where OpsLevel actively pulls data from an external API, as will be demonstrated with Jira.
+*   **Pull Integrations**: Where OpsLevel actively pulls data from an external API, as will be demonstrated with Rootly.
 
 The process involves a two-stage approach:
 1.  **Extract**: Defines how to retrieve your data, including HTTP polling settings, authentication, and data extraction rules.
@@ -40,7 +40,7 @@ You'll need to define a new component type in OpsLevel to represent your Rootly 
     <img width="2008" height="1252" alt="image" src="https://github.com/user-attachments/assets/dcab2b10-23e3-4d9b-925b-102c351fc396" />
 
 
-5.  **Define Custom Relationships**: Establish relationships to link Jira tickets to existing services and teams in OpsLevel:
+5.  **Define Custom Relationships**: Establish relationships to link Rootly tickets to existing services and teams in OpsLevel:
     *   **Associated Service**:
         *   **Display Name**: `Service Incidents`.
         *   **Identifier**: `associated_service`.
@@ -50,7 +50,7 @@ You'll need to define a new component type in OpsLevel to represent your Rootly 
 
 ### Step 2: Create a Secret in OpsLevel for Rootly Authentication
 
-You'll need a secret to store your Jira API token for authentication.
+You'll need a secret to store your Rootly API token for authentication.
 
 1.  **Navigate to Secrets**: In OpsLevel, go to **Settings > Secrets**.
 2.  **Create New Secret**:
@@ -67,7 +67,7 @@ This step initiates the custom integration process.
 
 ### Step 4: Configure the Extraction Definition
 
-The extraction definition specifies how OpsLevel will pull data from Jira.
+The extraction definition specifies how OpsLevel will pull data from Rootly.
 
 1.  **Access Configuration**: Within your custom Rootly integration, find the **Extract and Transform Configuration** section.
 2.  **Define Extractor**: Configure the extractor definition in YAML as follows:
@@ -154,4 +154,4 @@ After configuring both definitions, you can test and activate your integration.
 ## Important Considerations
 
 *   **JQ Expressions**: The system relies on JQ expressions for data extraction and transformation. Leverage [JQ](https://jqlang.org/manual/v1.6/) for transformations.
-*   **Filtering Data**: For large datasets like Jira tickets, utilize the `exclude` parameter in the extraction definition to filter out unwanted data, preventing the catalog from becoming overloaded. Leverage the Jira API parameters for filtering.
+*   **Filtering Data**: For large datasets like Rootly tickets, utilize the `exclude` parameter in the extraction definition to filter out unwanted data, preventing the catalog from becoming overloaded. Leverage the Rootly API parameters for filtering.
