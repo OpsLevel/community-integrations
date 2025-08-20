@@ -162,6 +162,38 @@ Query Variables
 }
 ```
 
+### 🧬 componentTypeCreate
+
+```graphql
+mutation componentTypeCreate($name: String, $alias: String, $description: String, $iconName: ComponentTypeIconEnum!, $iconColor: String!) {
+  componentTypeCreate(
+    input: {name: $name, alias: $alias, description: $description, icon: {name: $iconName, color: $iconColor}}
+  ) {
+    componentType {
+      name
+      alias
+      description
+      icon {
+        name
+        color
+      }
+    }
+  }
+}
+```
+
+Query Variables:
+
+```json
+{
+  "name": "Third Party Vendors",
+  "alias": "third_party_vendors",
+  "description": "Track third party vendors in our software catalog.",
+  "iconName": "PhStorefront",
+  "iconColor": "#ff7a45"
+}
+```
+
 ### 🧬 customActionsTriggerInvoke, get action ids and component ids first
 
 Use case: Trigger custom actions via API
