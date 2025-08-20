@@ -2,8 +2,6 @@
 
 The opslevel-cli commands and steps below can be used to filter services by a particular property and tag the resulting services. A subsequent filter can be created in OpsLevel based on the tag assigned.
 
-In this example, services are filtered based on their `createdAt` date if they were created after a specific date and then tagged with the `created-after` tag.
-
 Some steps using the opslevel-cli can be chained, but kept separate for simplicity.
 
 # Requirements
@@ -11,7 +9,11 @@ Some steps using the opslevel-cli can be chained, but kept separate for simplici
 * opslevel-cli installed https://github.com/OpsLevel/cli
 * jq https://stedolan.github.io/jq/
 
-# Steps and commands
+# Use Cases
+
+## Filter services based on their `createdAt` and assign a tag
+
+In this example, services are filtered based on their `createdAt` date if they were created after a specific date and then tagged with the `created-after` tag.
 
 1. Grab the list of services in OpsLevel and output to a services_<date-time>.json file using the following opslevel-cli command. For convenience, the commands below will autofill the current date and time for you.
 
@@ -57,3 +59,53 @@ done
 4. An OpsLevel filter can be created looking for the tag.
 
 ![opslevel_filter_based_on_tag](./opslevel_filter_based_on_tag.png)
+
+
+## Filter services based on an OpsLevel Filter and assign a tag
+
+In this example, tag a set of services that are going to change ownership (e.g. company re-org). Services are filtered based on existing ownership (teams), but will be tagged to then filter on that tag. Otherwise, services will no longer match the previous filter as they get assigned new owners (teams) that are most likely not a part of the previous filter.
+
+1. Grab the list of services in a filter in OpsLEvel and output to a services_<date-time>.json file using the following opslevel-cli command. For convenience, the commands below will autofill the current date and tiem for you.
+
+```
+DATETIME=$(date +"%Y%m%d-%H%M")
+opslevel graphql -a '.account.services.nodes[]' -q'query get_all_services_in_filter{
+  account{
+    services(first: 500, filterIdentifier:{id: "Z2lkOi8vb3BzbGV2ZWwvRmlsdGVyLzg4MzA"}){
+      totalCount
+      pageInfo{
+        endCursor
+        hasNextPage
+      }
+      nodes{
+        name
+        id
+      }
+    }
+  }
+}' > services_$DATETIME.json
+```
+
+2. Use the following jq expression to filter and get the list of service ids.
+
+```
+cat services_<date-time>.json| jq -r '.[] | .id' > service_ids_output.txt
+```
+
+3. Run the following opslevel-cli command to read the ids from the file and write a tag to those services. Replace KEY and VALUE.
+
+In this example, the tag added will be `reorg-aug-2025:true` to the services. The tag can be deleted from all services using the opslevel-cli in the future if needed.
+
+```
+cat service_ids_output.txt | while read -r item; do
+  opslevel create tag --type=Service $item KEY VALUE
+done
+```
+
+Example:
+
+```
+cat service_ids_output.txt | while read -r item; do
+  opslevel create tag --type=Service $item reorg-aug-2025 true
+done
+```
