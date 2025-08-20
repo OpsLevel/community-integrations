@@ -925,6 +925,246 @@ query get_checks{
 }
 ```
 
+### 🔎 scorecards > all
+
+```graphql
+query scorecards($endCursor: String) {
+  account {
+    scorecards(after: $endCursor) {
+      nodes {
+        id
+        name
+        categories {
+          nodes {
+            id
+          }
+        }
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+    }
+  }
+}
+```
+
+### 🔎 scorecard > checks, get scorecards first
+
+```graphql
+query scorecards($endCursor: String) {
+  account {
+    scorecards(after: $endCursor) {
+      nodes {
+        id
+        name
+        categories {
+          nodes {
+            id
+          }
+        }
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+    }
+  }
+}
+
+query scorecard($scorecardId: ID, $endCursor: String) {
+  account {
+    scorecard(input: {id: $scorecardId}) {
+      checks(after: $endCursor) {
+        totalCount
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+        nodes {
+          description
+          enabled
+          filter {
+            id
+            name
+          }
+          id
+          level {
+            id
+            name
+          }
+          name
+          notes
+          type
+          owner {
+            ... on Team {
+              id
+              name
+            }
+          }
+          ... on AlertSourceUsageCheck {
+            alertSourceNamePredicate {
+              type
+              value
+            }
+            alertSourceType
+          }
+          ... on CodeIssueCheck {
+            constraint
+            issueName
+            issueType
+            maxAllowed
+            resolutionTime {
+              unit
+              value
+            }
+            severity
+          }
+          ... on CustomCheck {
+            type
+          }
+          ... on CustomEventCheck {
+            integration {
+              id
+              name
+            }
+            passPending
+            resultMessage
+            serviceSelector
+            successCondition
+          }
+          ... on GitBranchProtectionCheck {
+            type
+          }
+          ... on HasDocumentationCheck {
+            documentType
+            type
+          }
+          ... on HasRecentDeployCheck {
+            days
+          }
+          ... on ManualCheck {
+            updateFrequency {
+              frequencyTimeScale
+              frequencyValue
+              startingDate
+            }
+            updateRequiresComment
+          }
+          ... on PackageVersionCheck {
+            missingPackageResult
+            packageConstraint
+            packageManager
+            packageName
+            versionConstraintPredicate {
+              type
+              value
+            }
+          }
+          ... on PayloadCheck {
+            jqExpression
+            resultMessage
+          }
+          ... on RelationshipCheck {
+            relationshipCountPredicate {
+              type
+              value
+            }
+            relationshipDefinition {
+              id
+              name
+            }
+          }
+          ... on RepositoryFileCheck {
+            directorySearch
+            fileContentsPredicate {
+              type
+              value
+            }
+            filePaths
+            useAbsoluteRoot
+          }
+          ... on RepositoryGrepCheck {
+            directorySearch
+            fileContentsPredicate {
+              type
+              value
+            }
+            filePaths
+          }
+          ... on RepositoryIntegratedCheck {
+            type
+          }
+          ... on RepositorySearchCheck {
+            fileContentsPredicate {
+              type
+              value
+            }
+            fileExtensions
+          }
+          ... on ServiceConfigurationCheck {
+            type
+          }
+          ... on ServiceDependencyCheck {
+            type
+          }
+          ... on ServiceOwnershipCheck {
+            contactMethod
+            requireContactMethod
+            tagKey
+            tagPredicate {
+              type
+              value
+            }
+          }
+          ... on ServicePropertyCheck {
+            propertyDefinition {
+              id
+              name
+            }
+            propertyValuePredicate {
+              type
+              value
+            }
+            serviceProperty
+          }
+          ... on TagDefinedCheck {
+            tagKey
+            tagPredicate {
+              type
+              value
+            }
+          }
+          ... on ToolUsageCheck {
+            environmentPredicate {
+              type
+              value
+            }
+            toolCategory
+            toolNamePredicate {
+              type
+              value
+            }
+            toolUrlPredicate {
+              type
+              value
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+Query variables:
+
+```json
+{
+  "scorecardId": "Z2lkOi8vb3BzbGV2ZWwvUnVicmljLzE4Njc"
+}
+```
+
 ### 🔎 services > all
 
 ```graphql
