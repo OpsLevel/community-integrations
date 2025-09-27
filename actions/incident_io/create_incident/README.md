@@ -56,14 +56,13 @@ https://api.incident.io/v2/incidents
 ```
 
 #### Headers
-The headers must include `Content-Type`, `Accept`, and an `Authorization` token for the incident.io API. Use OpsLevel's secrets management to securely store your API key.
+The headers must include `Content-Type`, and an `Authorization` token for the incident.io API. Use OpsLevel's secrets management to securely store your API key.
 
 For more details on using secrets, see the [OpsLevel documentation on Secrets](https://docs.opslevel.com/docs/secrets).
 
 ```json
 {
   "Content-Type": "application/json",
-  "Accept": "application/json",
   "Authorization": "Bearer {{ '' | secret: 'incident-io-api-key' }}"
 }
 ```
@@ -71,7 +70,7 @@ For more details on using secrets, see the [OpsLevel documentation on Secrets](h
 
 #### Body (Payload)
 
-The body of the request is a JSON payload constructed using [Liquid syntax](https://docs.opslevel.com/docs/getting-started-with-liquid) to dynamically insert values from the manual inputs.
+The body of the request is a JSON payload constructed using [Liquid syntax](https://shopify.github.io/liquid/) to dynamically insert values from the manual inputs.
 
 *   The `idempotency_key` helps prevent duplicate incidents from being created.
 *   `name` and `mode` are taken directly from the user's form inputs.
@@ -109,4 +108,3 @@ Once you have configured all the sections, the final step is to publish the acti
 
 1.  Use the toggle at the bottom of the action configuration page to publish it.
 2.  Optionally, you can use [OpsLevel Filters](https://docs.opslevel.com/docs/checks-and-filters) to control which services the action is available for, for example, by team, tier, or technology.
-```
