@@ -1,4 +1,3 @@
-```markdown
 # OpsLevel Action for incident.io Incident Creation
 
 This guide provides instructions on how to build a Custom Action in OpsLevel to create a new incident in incident.io. This allows users to declare incidents directly from the service catalog in OpsLevel, streamlining the incident response process.
