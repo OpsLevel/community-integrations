@@ -124,13 +124,15 @@ After configuring both definitions, you can test and activate your integration.
 
 After configuring custom integration, you can add single value widgets to your service layout as a different way of visualizing the data.
 
-<img width="2543" height="882" alt="image" src="https://github.com/user-attachments/assets/60f6ffba-cae3-4037-b250-bfeff69a342b" />
+<img width="2536" height="879" alt="image" src="https://github.com/user-attachments/assets/4cc60313-afb7-45b2-b334-988e4ea25e4d" />
+
 
 1.  **Navigate to Customization**: In OpsLevel, go to **Settings > Customization > Service > Layout**.
 2.  **+ New Widget**: Add a new `Catalog Data: single value` widget to your layout (can be added to the summary tab, or a new custom tab if desired.
 3.  **Configure widget**: Add a title, description, query, value & any style overrides.
 
-   <img width="1204" height="822" alt="image" src="https://github.com/user-attachments/assets/b3b06808-fe0f-40aa-a507-be95cce05afc" />
+   <img width="2032" height="1289" alt="image" src="https://github.com/user-attachments/assets/fee0dd29-4df9-42fd-9536-0b46fae6b714" />
+
   
 **Query**:
 <pre>account
