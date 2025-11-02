@@ -28,15 +28,16 @@ You'll need to define a new component type in OpsLevel.
     *   **Description**: Provide helper text (e.g., "Used to track LaunchDarkly feature flags related to services").
     *   **Customize Icon** (Optional): You can customize the icon for this component type.
     *   Press **Save**.
-    <img width="2129" height="1102" alt="image" src="https://github.com/user-attachments/assets/be56f8db-4774-4541-bc7e-71f3b582a38b" />
+    <img width="2155" height="988" alt="image" src="https://github.com/user-attachments/assets/ab0063a4-1c10-4909-ba68-d403ed8ad384" />
+
 
 
 4.  **Define Custom Properties**: On the Component Edit Page, define the following custom properties:
     *   **Feature Flag Repos**: Type `Array` (String).
-    *   **Archived**: Type `Text` (String).
-    *   **Deprecated**: Type `Text` (String).
+    *   **Archived**: Type `Boolean` (String).
+    *   **Deprecated**: Type `Boolean` (String).
     *   **Maintainer Email**: Type `Text` (String).
-    *   **Temporary**: Type `Text` (String).
+    *   **Temporary**: Type `Boolean` (String).
     *   **Created At**: Type `Text` (String).
     <img width="1653" height="1043" alt="image" src="https://github.com/user-attachments/assets/4f19c56d-8eac-48e0-b01c-50a5d52f4a72" />
 
