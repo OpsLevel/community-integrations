@@ -28,18 +28,20 @@ You'll need to define a new component type in OpsLevel.
     *   **Description**: Provide helper text (e.g., "Used to track LaunchDarkly feature flags related to services").
     *   **Customize Icon** (Optional): You can customize the icon for this component type.
     *   Press **Save**.
-    <img width="2155" height="988" alt="image" src="https://github.com/user-attachments/assets/ab0063a4-1c10-4909-ba68-d403ed8ad384" />
+    <img width="2306" height="1114" alt="image" src="https://github.com/user-attachments/assets/5ec75b6e-3645-43f7-9d1a-e1a3b626df6f" />
+
 
 
 
 4.  **Define Custom Properties**: On the Component Edit Page, define the following custom properties:
-    *   **Feature Flag Repos**: Type `Array` (String).
+    *   **Code Reference Repo**: Type `Array` (String).
     *   **Archived**: Type `Boolean` (String).
     *   **Deprecated**: Type `Boolean` (String).
     *   **Maintainer Email**: Type `Text` (String).
     *   **Temporary**: Type `Boolean` (String).
     *   **Created At**: Type `Text` (String).
-    <img width="1653" height="1043" alt="image" src="https://github.com/user-attachments/assets/4f19c56d-8eac-48e0-b01c-50a5d52f4a72" />
+    <img width="2051" height="1208" alt="image" src="https://github.com/user-attachments/assets/eb968f05-88eb-46be-8883-cacd2f457c1e" />
+
 
 
 
@@ -48,8 +50,9 @@ You'll need to define a new component type in OpsLevel.
         *   **Display Name**: `Service`.
         *   **Identifier**: `ff_service`.
         *   **Allowed Types**: Select `Service`.
-        *   **Management Rule**: Set a rule to automatically associate the LaunchDarkly feature flags to a service based on the `Feature Flag Repo` array.
-<img width="1928" height="1289" alt="image" src="https://github.com/user-attachments/assets/5e22d964-5760-4401-8ce6-67e60b399f76" />
+        *   **Management Rule**: Set a rule to automatically associate the LaunchDarkly feature flags to a service based on the `Code Reference Repo` array.
+<img width="1782" height="1282" alt="image" src="https://github.com/user-attachments/assets/88a938f6-2e48-4e68-a585-258169be466a" />
+
 
 
 ### Step 2: Create a Secret in OpsLevel for LaunchDarkly Authentication
@@ -126,7 +129,7 @@ The transformation definition maps the extracted LaunchDarkly data to your OpsLe
           temporary: ".temporary"
           maintainer_email: "._maintainer.email"
           created_at: ".creationDate"
-          feature_flag_repos: ".codeReferences.items[].repositoryName"
+          code_reference_repo: ".codeReferences.items[].repositoryName"
     ```
     *   **`external_kind: launchdarkly_feature_flags`**: This is mapping the data of the LaunchDarkly feature flags to the custom properties in OpsLevel.
     *   **`on_component_not_found: create`**: Specifies that if an OpsLevel component matching the `opslevel_identifier` is not found, a new feature flag should be created. Other options include `skip` or `suggest`.
