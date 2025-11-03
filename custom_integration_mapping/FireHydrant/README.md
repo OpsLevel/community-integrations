@@ -22,7 +22,6 @@ Both stages are configured in YAML, requiring no coding and allowing for configu
 
 1.  **Define Custom Properties**: On the Component Edit Page, define relevant custom properties:
     *   **Name**: Type `Text` (String).
-    *   **Component Description**: Type `Text` (String).
     *   **Incident Count**: Type `Number` (Number).
     <img width="1772" height="1282" alt="image" src="https://github.com/user-attachments/assets/109c11a0-136b-4485-b554-0d8d14c55438" />
 
