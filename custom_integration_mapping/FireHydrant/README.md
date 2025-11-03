@@ -89,7 +89,6 @@ The transformation definition maps the extracted FireHydrant data to your OpsLev
       opslevel_identifier: ".slug"
       properties:
        name: ".name"
-       component_description: ".description"
        incident_count: ".active_incidents | length"
     ```
     *   **`external_kind: firehydrant`**: This is mapping the data of the firehydrant extractor to the custom properties in OpsLevel.
