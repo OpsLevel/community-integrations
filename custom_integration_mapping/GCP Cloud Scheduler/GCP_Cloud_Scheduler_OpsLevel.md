@@ -20,6 +20,9 @@ GCP Projects → Fetch with gcloud CLI → Transform to JSON → OpsLevel Webhoo
 
 ## Step 1: Create OpsLevel Custom Integration
 
+For more detailed examples and updates, see the [community-integrations documentation](https://github.com/BhavyaLH/community-integrations.git).
+
+
 1. Navigate to **Integrations** → **Custom Integrations** → **Create Custom Integration**
 2. Configure:
    - **Name**: `GCP Cloud Scheduler Integration`
@@ -99,6 +102,11 @@ state: Direct extraction of .state field value
 ```
 
 ## Step 3: Authenticate with GCP
+
+For further details about the `gcloud scheduler jobs` commands and available options, refer to the official documentation:
+
+- [gcloud scheduler jobs documentation](https://cloud.google.com/sdk/gcloud/reference/scheduler/jobs)
+
 
 ```bash
 # Install and authenticate
