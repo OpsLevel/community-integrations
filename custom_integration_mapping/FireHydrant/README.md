@@ -1,4 +1,4 @@
-# FireHydrant custom integration setup: Pull the service catalog from FireHydranr into your OpsLevel catalog
+# FireHydrant custom integration setup: Pull the service catalog from FireHydrant into your OpsLevel catalog
 
 This README provides a step-by-step guide to setting up a custom integration mapping in OpsLevel to import services from FireHydrant.
 
