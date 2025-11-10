@@ -10,40 +10,51 @@ import (
 	"strings"
 )
 
+const ErrorMissingHeaderPattern = "missing header '%s'"
+
 const (
-	HeaderSignatureCanonical = "X-Opslevel-Signature"
-	HeaderSignature          = "X-OpsLevel-Signature"
-	HeaderTimingCanonical    = "X-Opslevel-Timing"
-	HeaderTiming             = "X-OpsLevel-Timing"
+	HeaderSignature  = "X-OpsLevel-Signature"
+	HeaderTiming     = "X-OpsLevel-Timing"
+	HeaderActionUUID = "X-OpsLevel-Action-Uuid"
 )
 
 // Search for OpsLevel signature
 func GetSignatureFromHeader(headers http.Header) (string, error) {
-	if headers[HeaderSignatureCanonical] == nil {
-		return "", fmt.Errorf("missing header '%s'", HeaderSignatureCanonical)
+	signature := headers.Get(HeaderSignature)
+
+	if signature == "" {
+		return "", fmt.Errorf(ErrorMissingHeaderPattern, HeaderSignature)
 	}
-	return headers[HeaderSignatureCanonical][0], nil
+
+	return signature, nil
 }
 
 // Build the content to be signed
 func BuildContent(headers http.Header, additionalHeadersToKeep []string, body []byte) (string, error) {
-	if headers[HeaderTimingCanonical] == nil {
-		return "", fmt.Errorf("missing header '%s'", HeaderTimingCanonical)
+	if headers.Get(HeaderTiming) == "" {
+		return "", fmt.Errorf(ErrorMissingHeaderPattern, HeaderTiming)
 	}
 
 	// Build the headers for signature verification
-	keys := append([]string{HeaderTiming}, additionalHeadersToKeep...) // Make sure we always have X-Opslevel-Timing in there
+	keys := []string{HeaderTiming} // Make sure we always have X-Opslevel-Timing in there
+	// Adds X-OpsLevel-Action-Uuid from asynchronous action requests
+	if headers.Get(HeaderActionUUID) != "" {
+		keys = append(keys, HeaderActionUUID)
+	}
+	for _, additionalHeader := range additionalHeadersToKeep {
+		keys = append(keys, additionalHeader)
+	}
 	sort.Strings(keys)
 
 	// Create the header content portion
-	headerContent := []string{}
+	headerContent := make([]string, 0, len(keys))
 	for _, k := range keys {
-		headerContent = append(headerContent, k+":"+headers[http.CanonicalHeaderKey(k)][0])
+		headerContent = append(headerContent, k+":"+headers.Get(k))
 	}
 	h := strings.Join(headerContent, ",")
 
 	// Build content
-	return fmt.Sprintf("%s+%s", h, string(body[:])), nil
+	return fmt.Sprintf("%s+%s", h, string(body)), nil
 }
 
 // Verify that the content match the hmacSig.
