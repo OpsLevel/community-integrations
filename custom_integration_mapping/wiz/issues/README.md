@@ -1,4 +1,4 @@
-# 🧭 Wiz → OpsLevel Issues Integration Script
+# 🧭 Wiz Issues → OpsLevel Integration Script
 
 ## Overview
 
@@ -12,7 +12,7 @@ It enables continuous synchronization of Wiz issues into OpsLevel Components, pr
 
 ## 🚀 Features
 
-* 🔐 **Automated OAuth2 Authentication** with Wiz (Auth0 or Cognito)
+* 🔐 **Automated OAuth2 Authentication** with Wiz
 * 🔁 **Cursor-based Pagination** to fetch all Wiz issues efficiently
 * 📤 **OpsLevel Webhook Integration** for data ingestion
 * 🧩 **Incremental Sync** — only pulls issues updated since the last run
@@ -179,8 +179,3 @@ Configuration file updated successfully. Next run will fetch issues changed afte
 | `main()`                  | Orchestrates full process                   |
 
 ---
-
-## 🧾 License
-
-This project is licensed under the **MIT License** (or your organization’s equivalent).
-See the `LICENSE` file if included.
