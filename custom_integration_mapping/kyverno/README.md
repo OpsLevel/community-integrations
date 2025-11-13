@@ -102,7 +102,7 @@ Locate the `webhook` section in the Policy Reporter configuration:
 
 ```yaml
 webhook:
-  host: "YOUR_OPSLEVEL_CUSTOM_INTEGRATION_WEBHOOK_URL"
+  host: "<YOUR_OPSLEVEL_CUSTOM_INTEGRATION_WEBHOOK_URL>?external_kind=kyverno_issues"
   headers: {}
   minimumPriority: "" 
   skipExistingOnStartup: true
@@ -121,5 +121,6 @@ webhook:
 ```
 1.  Set the **`host`** key to the **Webhook URL** obtained from your OpsLevel Custom Integration Mapping in Step 2.
 2.  Apply the configuration changes to the Policy Reporter deployment.
+3.  The `external_kind` in `external_kind=kyverno_issues` in the host configuration should match the to the external kind defined in the OpsLevel custom integration extractor definition
 
 Upon receiving the data, OpsLevel's custom integration will extract and transform the payload, creating or updating the `Kyverno Issue` components and populating them with the detailed violation data, automatically managed by the integration.
