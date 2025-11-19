@@ -1,0 +1,10 @@
+{
+  "repositories": [
+    {
+      "archived": false,
+      "name": "ap-skyflow-demo",
+      "tribeName": "content-gte",
+      "squadName": "jarvis"
+    }
+  ]
+}
