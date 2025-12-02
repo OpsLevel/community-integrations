@@ -216,6 +216,76 @@ query get_repo_file_check {
 }
 ```
 
+### 🔎 componentTypes: get all component types and their custom properties
+
+```graphql
+query componentTypes($endCursor: String) {
+  account {
+    componentTypes(after: $endCursor) {
+      nodes {
+        id
+        name
+        alias
+        properties {
+          nodes {
+            id
+            name
+            alias
+            schema
+            description
+            lockedStatus
+            propertyDisplayStatus
+            allowedInConfigFiles
+          }
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    }
+  }
+}
+```
+
+### 🔎 componentType: get back a component type and it's custom properties
+
+```graphql
+query componentType_properties($componentTypeId: ID, $componentTypeAlias: String, $endCursor: String) {
+  account {
+    componentType(input: {id: $componentTypeId, alias: $componentTypeAlias}) {
+      id
+      name
+      alias
+      properties(after: $endCursor) {
+        nodes {
+          id
+          name
+          alias
+          schema
+          description
+          lockedStatus
+          propertyDisplayStatus
+          allowedInConfigFiles
+        }
+        pageInfo {
+          endCursor
+          hasNextPage
+        }
+      }
+    }
+  }
+}
+```
+
+Query variables:
+
+```json
+{
+  "componentTypeAlias": "api"
+}
+```
+
 ### 🔎 deploys (for a specific service within a specific timerange)
 
 ```graphql
