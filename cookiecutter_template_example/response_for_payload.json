@@ -1,0 +1,142 @@
+{
+  "template_inputs_project_name": "my_project6",
+  "template_inputs": {
+    "project_name": "my_project6"
+  },
+  "template_outputs": {
+    "Pull Request URL": "https://github.com/gandalfsbooks/my-project-6/pull/1",
+    "Pull Request Branch": "opslevel/initialize_service_f5ca0a93",
+    "New Service Repo": "https://github.com/gandalfsbooks/my-project-6"
+  },
+  "user_name": "Ian Roy",
+  "user_all_properties": {
+    "id": "Z2lkOi8vb3BzbGV2ZWwvVXNlci80MjIw",
+    "name": "Ian Roy",
+    "email": "ianroy+ianroydemo@opslevel.com",
+    "href": "/users/4220",
+    "role": "admin",
+    "deactivated_at": null,
+    "sign_in_count": 137,
+    "deactivated": false,
+    "gravatar_src": "https://www.gravatar.com/avatar/1b04839939358c73081bdfeea9b8a37b?d=blank&r=pg&s=200",
+    "pending": false,
+    "has_provider": false,
+    "api_token_count": 3,
+    "provisioned_by": "OpsLevel Admin"
+  },
+  "service_name": "my_project6",
+  "service_all_properties": {
+    "id": "Z2lkOi8vb3BzbGV2ZWwvU2VydmljZS8xMDc4NDYz",
+    "name": "my_project6",
+    "href": "/components/my_project6",
+    "product": null,
+    "language": "Python",
+    "framework": "Flask",
+    "slug": "my_project6",
+    "tier_index": null,
+    "lifecycle_index": null,
+    "service_stat": null,
+    "tags": [],
+    "alert_sources": [],
+    "service_repositories": [
+      {
+        "id": "Z2lkOi8vb3BzbGV2ZWwvU2VydmljZVJlcG9zaXRvcnkvMTU3NTQz",
+        "repo_path": "",
+        "is_primary": false,
+        "managed": false,
+        "locked": false,
+        "at_root": true,
+        "display_name": "gandalfsbooks/my-project-6",
+        "deep_url": "https://github.com/gandalfsbooks/my-project-6",
+        "repository": {
+          "id": "Z2lkOi8vb3BzbGV2ZWwvUmVwb3NpdG9yaWVzOjpHaXRodWIvMTU1NTY0Ng",
+          "name": "my-project-6",
+          "url": "https://github.com/gandalfsbooks/my-project-6",
+          "default_branch": "main",
+          "invalidated_at": null,
+          "forked": false,
+          "repo_key": "1130619362",
+          "display_name": "gandalfsbooks/my-project-6",
+          "description": null,
+          "type_string": "github",
+          "visible": true,
+          "archived_at": null,
+          "branch_protection": null,
+          "created_on": "2026-01-08 19:03:54 UTC",
+          "account_name": "gandalfsbooks",
+          "type_display_name": "GitHub",
+          "icon": "github",
+          "integration_href": "https://app.opslevel.com/integrations/github/1558",
+          "locked": false,
+          "active": true,
+          "private": true,
+          "href": "/repositories/1555646"
+        }
+      }
+    ],
+    "owner": {
+      "id": "Z2lkOi8vb3BzbGV2ZWwvVGVhbS8xOTA1",
+      "name": "Order Management Team",
+      "href": "/teams/order_management_team",
+      "slug": "order_management_team",
+      "service_stat": {
+        "num_checks": 292,
+        "num_passing_checks": 163
+      },
+      "manager": "#<User:0x00007fab58bfa8c8>",
+      "has_checks": true,
+      "alias": "order_management_team",
+      "aliases": [
+        "order",
+        "order management team",
+        "order_management_team"
+      ],
+      "tags": [
+        {
+          "key": "tech_lead",
+          "value": "alliason_warren@gandalfsbooks.com",
+          "id": "Z2lkOi8vb3BzbGV2ZWwvVGFnLzE1MjczMDE0NQ",
+          "locked": false,
+          "locker_kind": null,
+          "locker_url": null
+        }
+      ],
+      "contacts": [
+        {
+          "id": "Z2lkOi8vb3BzbGV2ZWwvQ29udGFjdC8xNzgy",
+          "address": "ianroy+ianroydemoorders@opslevel.com",
+          "contact_method": "EMAIL",
+          "display_name": "Email",
+          "display_type": "Primary",
+          "target_href": "mailto:ianroy+ianroydemoorders@opslevel.com",
+          "type": "Email",
+          "short_name": "ianroy+ianroydemoorders@opslevel.com",
+          "icon": "mail"
+        },
+        {
+          "id": "Z2lkOi8vb3BzbGV2ZWwvQ29udGFjdC8yNDQz",
+          "address": "#order-mgmt",
+          "contact_method": "SLACK",
+          "display_name": "Slack Channel",
+          "display_type": null,
+          "target_href": "https://gandalfsbooks.slack.com/channels/order-mgmt/",
+          "type": "Slack",
+          "short_name": "#order-mgmt",
+          "icon": "slack"
+        },
+        {
+          "id": "Z2lkOi8vb3BzbGV2ZWwvQ29udGFjdC8zODIyNQ",
+          "address": "#order-mgmt-private",
+          "contact_method": "SLACK",
+          "display_name": "Slack Channel",
+          "display_type": "Secondary",
+          "target_href": "https://gandalfsbooks.slack.com/channels/order-mgmt-private/",
+          "type": "Slack",
+          "short_name": "#order-mgmt-private",
+          "icon": "slack"
+        }
+      ]
+    },
+    "tools": []
+  }
+}
