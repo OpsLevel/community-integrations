@@ -1,7 +1,7 @@
 {
   "event_type": "actions",
   "client_payload": {
-    "action": "spin_up_storage",
+    "action": "post_service_creation_to_github_actions",
     "template_inputs_project_name": "{{ template_run.inputs.project_name }}",
     "template_inputs": {{ template_run.inputs | jsonify }},
     "template_outputs": {
@@ -15,3 +15,4 @@
     "service_all_properties": {{ service | jsonify }}
   }
 }
+
