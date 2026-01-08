@@ -1,0 +1,17 @@
+{
+  "event_type": "actions",
+  "client_payload": {
+    "action": "spin_up_storage",
+    "template_inputs_project_name": "{{ template_run.inputs.project_name }}",
+    "template_inputs": {{ template_run.inputs | jsonify }},
+    "template_outputs": {
+        "Pull Request URL": "{{ template_run.outputs.merge_request_url }}",
+        "Pull Request Branch": "{{ template_run.outputs.merge_request_branch }}",
+        "New Service Repo": "{{ template_run.outputs.repo_url }}"
+    },
+    "user_name": "{{ user.name }}",
+    "user_all_properties": {{ user | jsonify }},
+    "service_name": "{{ service.name }}",
+    "service_all_properties": {{ service | jsonify }}
+  }
+}
