@@ -1,0 +1,1 @@
+This project is called: {{ cookiecutter.project_name }}
