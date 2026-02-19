@@ -169,23 +169,31 @@ def main():
         property_number = int(action) - 1
         properties_to_copy = [source_properties[property_number]]
 
-    print("\nSelect a component type to copy the property to:")
+    print("\nSelect component type(s) to copy the property to (comma-separated for multiple):")
     for i, component_type in enumerate(component_types):
         print(f"{i+1}. {component_type['name']} ({component_type['id']})")
-    copy_to_component_type_number = int(input("Enter the number: ")) - 1
-    dest_component_type = component_types[copy_to_component_type_number]
-    dest_component_type_id = dest_component_type["id"]
+    
+    copy_to_input = input("Enter the number(s): ").strip()
+    # Parse comma-separated input
+    copy_to_numbers = [int(num.strip()) - 1 for num in copy_to_input.split(",")]
+    
+    # Process each destination component type
+    for copy_to_component_type_number in copy_to_numbers:
+        dest_component_type = component_types[copy_to_component_type_number]
+        dest_component_type_id = dest_component_type["id"]
+        
+        print(f"\nCopying properties to {dest_component_type['name']}...")
 
-    # Fetch existing properties of the destination
-    dest_properties = fetch_component_type_properties(dest_component_type_id)
+        # Fetch existing properties of the destination
+        dest_properties = fetch_component_type_properties(dest_component_type_id)
 
-    # Merge, avoiding duplicates by alias
-    existing_aliases = {prop["alias"] for prop in dest_properties}
-    new_properties = [prop for prop in properties_to_copy if prop["alias"] not in existing_aliases]
-    all_properties = dest_properties + new_properties
+        # Merge, avoiding duplicates by alias
+        existing_aliases = {prop["alias"] for prop in dest_properties}
+        new_properties = [prop for prop in properties_to_copy if prop["alias"] not in existing_aliases]
+        all_properties = dest_properties + new_properties
 
-    # Update destination with merged properties
-    create_or_update_properties(dest_component_type_id, all_properties)
+        # Update destination with merged properties
+        create_or_update_properties(dest_component_type_id, all_properties)
 
 
 if __name__ == "__main__":
