@@ -169,7 +169,7 @@ def main():
         property_number = int(action) - 1
         properties_to_copy = [source_properties[property_number]]
 
-    print("\nSelect a component type(s) to copy the property to (comma-separated for multiple):")
+    print("\nSelect component type(s) to copy the property to (comma-separated for multiple):")
     for i, component_type in enumerate(component_types):
         print(f"{i+1}. {component_type['name']} ({component_type['id']})")
     
