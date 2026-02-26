@@ -194,6 +194,35 @@ Query Variables:
 }
 ```
 
+### contactCreate
+
+Use case: Set a Team's contact details via API
+
+```graphql
+mutation modify_by_adding_contact_info {
+  contactCreate(
+    input: {teamAlias: "internal_tools", type: email, address: "internaltools@chucksburgerbars.com", displayName: "group email"}
+  ) {
+    contact {
+      id
+      displayName
+      type
+      address
+      owner {
+        ... on Team {
+          id
+          name
+        }
+      }
+    }
+    errors {
+      message
+      path
+    }
+  }
+}
+```
+
 ### 🧬 customActionsTriggerInvoke, get action ids and component ids first
 
 Use case: Trigger custom actions via API
