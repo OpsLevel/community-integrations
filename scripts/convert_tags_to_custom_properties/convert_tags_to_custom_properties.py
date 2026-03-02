@@ -100,8 +100,23 @@ def fetch_custom_properties():
     return properties
 
 
+def deduplicate_properties_by_name(properties):
+    """
+    Return properties with duplicate names removed, keeping the first occurrence.
+    """
+    seen_names = set()
+    deduplicated = []
+    for prop in properties:
+        name = prop["name"]
+        if name not in seen_names:
+            seen_names.add(name)
+            deduplicated.append(prop)
+    return deduplicated
+
+
 def main():
     properties = fetch_custom_properties()
+    properties = deduplicate_properties_by_name(properties)
 
     for index, property_info in enumerate(properties, 1):
         property_name = property_info["name"]
