@@ -100,23 +100,26 @@ def fetch_custom_properties():
     return properties
 
 
-def deduplicate_properties_by_name(properties):
+def deduplicate_properties_by_alias(properties):
     """
-    Return properties with duplicate names removed, keeping the first occurrence.
+    Return properties with duplicate aliases removed, keeping the first occurrence.
+    Uses the first alias from each property's aliases list.
     """
-    seen_names = set()
+    seen_aliases = set()
     deduplicated = []
     for prop in properties:
-        name = prop["name"]
-        if name not in seen_names:
-            seen_names.add(name)
+        alias = prop["aliases"][0] if prop.get("aliases") else None
+        if alias is not None and alias not in seen_aliases:
+            seen_aliases.add(alias)
             deduplicated.append(prop)
+        elif alias is None:
+            deduplicated.append(prop)  # Keep properties with no aliases
     return deduplicated
 
 
 def main():
     properties = fetch_custom_properties()
-    properties = deduplicate_properties_by_name(properties)
+    properties = deduplicate_properties_by_alias(properties)
 
     for index, property_info in enumerate(properties, 1):
         property_name = property_info["name"]
