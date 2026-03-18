@@ -1,0 +1,170 @@
+{
+    "cluster_count": 3,
+    "region_mode": "all",
+    "regions_requested": [
+        "ap-east-1",
+        "ap-northeast-1",
+        "ap-northeast-2",
+        "ap-south-1",
+        "ap-southeast-1",
+        "ap-southeast-2",
+        "ca-central-1",
+        "eu-central-1",
+        "eu-north-1",
+        "eu-south-1",
+        "eu-south-2",
+        "eu-west-1",
+        "eu-west-2",
+        "eu-west-3",
+        "sa-east-1",
+        "us-east-1",
+        "us-east-2",
+        "us-west-1",
+        "us-west-2"
+    ],
+    "region_errors": [
+        {
+            "region": "ap-east-1",
+            "error": "An error occurred (UnrecognizedClientException) when calling the DescribeClusters operation: The security token included in the request is invalid"
+        },
+        {
+            "region": "eu-south-1",
+            "error": "An error occurred (UnrecognizedClientException) when calling the DescribeClusters operation: The security token included in the request is invalid"
+        }
+    ],
+    "payload": {
+        "clusters": [
+            {
+                "Name": "test-memorydb-cluster",
+                "Description": "Easy created demo cluster on 2026-03-17T17:24:26.090Z",
+                "Status": "available",
+                "NumberOfShards": 1,
+                "ClusterEndpoint": {
+                    "Address": "clustercfg.test-memorydb-cluster.swdlag.memorydb.us-east-1.amazonaws.com",
+                    "Port": 6379
+                },
+                "NodeType": "db.t4g.small",
+                "Engine": "valkey",
+                "EngineVersion": "7.3",
+                "EnginePatchVersion": "7.3.0",
+                "ParameterGroupName": "default.memorydb-valkey7",
+                "ParameterGroupStatus": "in-sync",
+                "SecurityGroups": [
+                    {
+                        "SecurityGroupId": "sg-0729290ac70495571",
+                        "Status": "active"
+                    }
+                ],
+                "SubnetGroupName": "ianroy-test-subnet",
+                "TLSEnabled": true,
+                "ARN": "arn:aws:memorydb:us-east-1:123456789012:cluster/test-memorydb-cluster",
+                "SnapshotRetentionLimit": 1,
+                "MaintenanceWindow": "fri:06:00-fri:07:00",
+                "SnapshotWindow": "07:00-08:00",
+                "ACLName": "open-access",
+                "AutoMinorVersionUpgrade": true,
+                "DataTiering": "false",
+                "NetworkType": "ipv4",
+                "IpDiscovery": "ipv4",
+                "region": "us-east-1",
+                "accountId": "123456789012",
+                "Tags": [
+                    {
+                        "Key": "Environment",
+                        "Value": "demo"
+                    },
+                    {
+                        "Key": "Team",
+                        "Value": "platform"
+                    }
+                ]
+            },
+            {
+                "Name": "test2-memorydb-cluster",
+                "Description": "Easy created demo cluster on 2026-03-17T19:40:25.646Z",
+                "Status": "available",
+                "NumberOfShards": 1,
+                "ClusterEndpoint": {
+                    "Address": "clustercfg.test2-memorydb-cluster.tejonk.memorydb.us-east-2.amazonaws.com",
+                    "Port": 6379
+                },
+                "NodeType": "db.t4g.small",
+                "Engine": "valkey",
+                "EngineVersion": "7.3",
+                "EnginePatchVersion": "7.3.0",
+                "ParameterGroupName": "default.memorydb-valkey7",
+                "ParameterGroupStatus": "in-sync",
+                "SecurityGroups": [
+                    {
+                        "SecurityGroupId": "sg-00dcdc54862515a8e",
+                        "Status": "active"
+                    }
+                ],
+                "SubnetGroupName": "ian2-subnet-group",
+                "TLSEnabled": true,
+                "ARN": "arn:aws:memorydb:us-east-2:123456789012:cluster/test2-memorydb-cluster",
+                "SnapshotRetentionLimit": 1,
+                "MaintenanceWindow": "tue:23:30-wed:00:30",
+                "SnapshotWindow": "05:00-06:00",
+                "ACLName": "open-access",
+                "AutoMinorVersionUpgrade": true,
+                "DataTiering": "false",
+                "NetworkType": "ipv4",
+                "IpDiscovery": "ipv4",
+                "region": "us-east-2",
+                "accountId": "123456789012",
+                "Tags": []
+            },
+            {
+                "Name": "test3-memorydbcluster",
+                "Description": "Easy created demo cluster on 2026-03-18T15:09:37.946Z",
+                "Status": "available",
+                "NumberOfShards": 1,
+                "ClusterEndpoint": {
+                    "Address": "clustercfg.test3-memorydbcluster.tejonk.memorydb.us-east-2.amazonaws.com",
+                    "Port": 6379
+                },
+                "NodeType": "db.t4g.small",
+                "Engine": "valkey",
+                "EngineVersion": "7.3",
+                "EnginePatchVersion": "7.3.0",
+                "ParameterGroupName": "default.memorydb-valkey7",
+                "ParameterGroupStatus": "in-sync",
+                "SecurityGroups": [
+                    {
+                        "SecurityGroupId": "sg-00dcdc54862515a8e",
+                        "Status": "active"
+                    }
+                ],
+                "SubnetGroupName": "ian2-subnet-group",
+                "TLSEnabled": true,
+                "ARN": "arn:aws:memorydb:us-east-2:123456789012:cluster/test3-memorydbcluster",
+                "SnapshotRetentionLimit": 1,
+                "MaintenanceWindow": "tue:02:30-tue:03:30",
+                "SnapshotWindow": "23:00-00:00",
+                "ACLName": "open-access",
+                "AutoMinorVersionUpgrade": true,
+                "DataTiering": "false",
+                "NetworkType": "ipv4",
+                "IpDiscovery": "ipv4",
+                "Tags": [
+                    {
+                        "Key": "environment",
+                        "Value": "staging"
+                    },
+                    {
+                        "Key": "team",
+                        "Value": "order_management_team"
+                    }
+                ],
+                "region": "us-east-2",
+                "accountId": "123456789012"
+            }
+        ]
+    },
+    "opslevel": {
+        "posted": true,
+        "status_code": 202,
+        "response_body": "{\"result\":\"ok\"}"
+    }
+}
