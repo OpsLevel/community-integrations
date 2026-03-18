@@ -85,6 +85,7 @@ Create a component type for MemoryDB clusters using this GraphQL mutation:
 mutation aws_memorydb {
   componentTypeCreate(
     input: {
+      category: "infrastructure"
       name: "AWS MemoryDB Cluster"
       alias: "aws_memorydb_cluster"
       properties: [
