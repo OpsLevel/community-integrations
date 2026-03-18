@@ -90,105 +90,129 @@ mutation aws_memorydb {
       alias: "aws_memorydb_cluster"
       properties: [
         {
-          name: "MemoryDB Status"
-          alias: "memorydb_status"
-          description: "MemoryDB Status"
+          name: "Status"
+          alias: "status"
+          description: "Cluster status"
           schema: "{\"type\":\"string\"}"
           propertyDisplayStatus: visible
           allowedInConfigFiles: false
         }
         {
-          name: "MemoryDB Endpoint"
-          alias: "memorydb_endpoint"
-          description: "MemoryDB endpoint address"
+          name: "Endpoint"
+          alias: "endpoint"
+          description: "Cluster endpoint address"
           schema: "{\"type\":\"string\"}"
           propertyDisplayStatus: visible
           allowedInConfigFiles: false
         }
         {
-          name: "MemoryDB Port"
-          alias: "memorydb_port"
-          description: "MemoryDB endpoint port"
+          name: "Port"
+          alias: "port"
+          description: "Cluster endpoint port"
           schema: "{\"type\":\"integer\"}"
           propertyDisplayStatus: visible
           allowedInConfigFiles: false
         }
         {
-          name: "MemoryDB Node Type"
-          alias: "memorydb_node_type"
-          description: "MemoryDB node type"
+          name: "Node Type"
+          alias: "node_type"
+          description: "Node instance type"
           schema: "{\"type\":\"string\"}"
           propertyDisplayStatus: visible
           allowedInConfigFiles: false
         }
         {
-          name: "MemoryDB Engine Version"
-          alias: "memorydb_engine_version"
-          description: "MemoryDB engine version"
+          name: "Engine Version"
+          alias: "engine_version"
+          description: "Engine version"
           schema: "{\"type\":\"string\"}"
           propertyDisplayStatus: visible
           allowedInConfigFiles: false
         }
         {
-          name: "MemoryDB TLS Enabled"
-          alias: "memorydb_tls_enabled"
-          description: "Whether TLS is enabled for MemoryDB"
+          name: "TLS Enabled"
+          alias: "tls_enabled"
+          description: "Whether TLS is enabled"
           schema: "{\"type\":\"boolean\"}"
           propertyDisplayStatus: visible
           allowedInConfigFiles: false
         }
         {
-          name: "MemoryDB Shard Count"
-          alias: "memorydb_shard_count"
-          description: "Number of MemoryDB shards"
+          name: "Shard Count"
+          alias: "shard_count"
+          description: "Number of shards"
           schema: "{\"type\":\"integer\"}"
           propertyDisplayStatus: visible
           allowedInConfigFiles: false
         }
         {
-          name: "MemoryDB ACL Name"
-          alias: "memorydb_acl_name"
-          description: "MemoryDB ACL name"
+          name: "ACL Name"
+          alias: "acl_name"
+          description: "ACL name"
           schema: "{\"type\":\"string\"}"
           propertyDisplayStatus: visible
           allowedInConfigFiles: false
         }
         {
-          name: "MemoryDB Subnet Group"
-          alias: "memorydb_subnet_group"
-          description: "MemoryDB subnet group name"
+          name: "Subnet Group"
+          alias: "subnet_group"
+          description: "Subnet group name"
           schema: "{\"type\":\"string\"}"
           propertyDisplayStatus: visible
           allowedInConfigFiles: false
         }
         {
-          name: "MemoryDB Maintenance Window"
-          alias: "memorydb_maintenance_window"
-          description: "MemoryDB maintenance window"
+          name: "Maintenance Window"
+          alias: "maintenance_window"
+          description: "Maintenance window"
           schema: "{\"type\":\"string\"}"
           propertyDisplayStatus: visible
           allowedInConfigFiles: false
         }
         {
-          name: "MemoryDB Snapshot Retention Limit"
-          alias: "memorydb_snapshot_retention_limit"
-          description: "MemoryDB snapshot retention limit"
+          name: "Snapshot Retention Limit"
+          alias: "snapshot_retention_limit"
+          description: "Snapshot retention limit"
           schema: "{\"type\":\"integer\"}"
           propertyDisplayStatus: visible
           allowedInConfigFiles: false
         }
         {
-          name: "AWS Region"
+          name: "Latest Snapshot Name"
+          alias: "latest_snapshot_name"
+          description: "Latest snapshot name"
+          schema: "{\"type\":\"string\"}"
+          propertyDisplayStatus: visible
+          allowedInConfigFiles: false
+        }
+        {
+          name: "Latest Event Message"
+          alias: "latest_event_message"
+          description: "Latest event message"
+          schema: "{\"type\":\"string\"}"
+          propertyDisplayStatus: visible
+          allowedInConfigFiles: false
+        }
+        {
+          name: "Latest Event Time"
+          alias: "latest_event_time"
+          description: "Timestamp of the latest event"
+          schema: "{\"type\":\"string\",\"format\":\"date-time\"}"
+          propertyDisplayStatus: visible
+          allowedInConfigFiles: false
+        }
+        {
+          name: "Region"
           alias: "region"
-          description: "AWS region where the MemoryDB cluster is deployed"
+          description: "AWS region where the cluster is deployed"
           schema: "{\"type\":\"string\"}"
           propertyDisplayStatus: visible
           allowedInConfigFiles: false
         }
         {
-          name: "AWS Account ID"
-          alias: "accountId"
-          description: "AWS account ID owning the MemoryDB cluster"
+          name: "Account ID"
+          alias: "account_id"
+          description: "AWS account ID owning the cluster"
           schema: "{\"type\":\"string\"}"
           propertyDisplayStatus: visible
           allowedInConfigFiles: false
@@ -207,6 +231,9 @@ mutation aws_memorydb {
   }
 }
 ```
+
+![AWS MemoryDB Cluster Component Type and Properties Page 1](./images/AWS_MemoryDB_Cluster_ComponentType_page1.png)
+![AWS MemoryDB Cluster Component Type and Properties Page 2](./images/AWS_MemoryDB_Cluster_ComponentType_page2.png)
 
 ### 2. Create the custom integration in OpsLevel
 
@@ -238,19 +265,19 @@ transforms:
   opslevel_identifier: ".ARN"
   properties:
     name: ".Name"
-    memorydb_status: ".Status"
-    memorydb_endpoint: ".ClusterEndpoint.Address"
-    memorydb_port: ".ClusterEndpoint.Port"
-    memorydb_node_type: ".NodeType"
-    memorydb_engine_version: ".EngineVersion"
-    memorydb_tls_enabled: ".TLSEnabled"
-    memorydb_shard_count: ".NumberOfShards"
-    memorydb_acl_name: ".ACLName"
-    memorydb_subnet_group: ".SubnetGroupName"
-    memorydb_maintenance_window: ".MaintenanceWindow"
-    memorydb_snapshot_retention_limit: ".SnapshotRetentionLimit"
+    status: ".Status"
+    endpoint: ".ClusterEndpoint.Address"
+    port: ".ClusterEndpoint.Port"
+    node_type: ".NodeType"
+    engine_version: ".EngineVersion"
+    tls_enabled: ".TLSEnabled"
+    shard_count: ".NumberOfShards"
+    acl_name: ".ACLName"
+    subnet_group: ".SubnetGroupName"
+    maintenance_window: ".MaintenanceWindow"
+    snapshot_retention_limit: ".SnapshotRetentionLimit"
     region: ".region"
-    accountId: ".accountId"
+    account_id: ".accountId"
   default_properties:
     tags:
     - '.Tags | map({ "key": .Key, "value": .Value })'
@@ -259,6 +286,8 @@ transforms:
 #### What the transform is doing
 
 OpsLevel will look at each item in `.clusters` and map raw AWS fields directly, including `.Status`, `.ClusterEndpoint.Address`, `.NodeType`, `.EngineVersion`, `.TLSEnabled`, `.NumberOfShards`, and the Lambda-added metadata `.region` and `.accountId`. AWS resource tags (`.Tags`) are mapped to OpsLevel component tags via `default_properties.tags` using `.Tags | map({ "key": .Key, "value": .Value })`.
+
+![Screenshot of Extract and Transform Definitions](./images/AWS_MemoryDB_extract_and_transform_definition.png)
 
 ---
 
