@@ -11,6 +11,9 @@ NOTE: This will only create relationships for the Service componentType at this 
    - `environment_tag_key` – tag key for environment
    - `environment_tag_value` – value for that environment (e.g. `staging`, `production`)
 
+![Tags Defined in Description for Production Resources Relationship](./images/Production_Resources_relationship.png)
+![Tags Defined in Description for Staging Resources Relationship](./images/Staging_Resources_relationship.png)
+
 2. **Matching**: For each such rule and each default component, the script finds infrastructure components that have **both**:
    - A tag `(environment_tag_key, environment_tag_value)` (e.g. `environment:staging`)
    - A tag `(service_tag_key, value)` where `value` is one of the **default component’s aliases** (e.g. `service:shopping_cart`)
@@ -52,4 +55,4 @@ python create_relationships_from_union_of_tags.py
 
 ## Idempotency
 
-The script does not query existing relationships before creating. Re-running may create duplicate edges for the same (source, target, relationship definition). Run once or add your own checks if you need to avoid duplicates.
+The script does not query existing relationships before creating. Re-running is safe, if the relationship already exists, it is a no-operation in OpsLevel.
