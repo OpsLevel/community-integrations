@@ -289,8 +289,6 @@ Use a policy like this:
 }
 ```
 
-Also attach the AWS-managed policy `AWSLambdaBasicExecutionRole`.
-
 ### 6. Create the Lambda function
 
 Create a Lambda function with:
