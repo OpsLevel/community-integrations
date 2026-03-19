@@ -10,6 +10,7 @@ service_tag_key:<default_component_alias>).
 import argparse
 import os
 import sys
+import time
 from typing import Any, Optional
 
 from gql import Client, gql
@@ -379,6 +380,7 @@ def main() -> int:
                 file=sys.stderr,
             )
             failed += 1
+        time.sleep(0.1)
 
     print(f"Created: {created}, Failed: {failed}")
     return 0 if failed == 0 else 1
