@@ -247,7 +247,7 @@ def paginate(
         page_info = conn.get("pageInfo") or {}
         has_next = page_info.get("hasNextPage")
         if verbose:
-            print(f"  Page {page + 1}: got {len(nodes)} nodes (total {len(all_nodes)})")
+            print(f"  Page index {page}: got {len(nodes)} nodes (total {len(all_nodes)})")
         if not has_next:
             break
         cursor = page_info.get("endCursor")
