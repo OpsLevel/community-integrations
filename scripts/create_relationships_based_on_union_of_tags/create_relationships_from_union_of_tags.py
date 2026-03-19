@@ -45,38 +45,11 @@ QUERY_RELATIONSHIP_DEFINITIONS = gql(
 """
 )
 
-QUERY_GET_COMPONENTS_DEFAULT = gql(
-"""
-    query get_components_default($endCursor: String) {
-      account {
-        services(after: $endCursor, componentCategory: "default") {
-          pageInfo {
-            endCursor
-            hasNextPage
-          }
-          nodes {
-            id
-            name
-            aliases
-            tags {
-              nodes {
-                key
-                value
-                id
-              }
-            }
-          }
-        }
-      }
-    }
-"""
-)
-
-QUERY_GET_COMPONENTS_INFRASTRUCTURE = gql(
+QUERY_GET_COMPONENTS = gql(
     """
-    query get_components_infrastructure($endCursor: String) {
+    query get_components($endCursor: String, $componentCategory: String!) {
       account {
-        services(after: $endCursor, componentCategory: "infrastructure") {
+        services(after: $endCursor, componentCategory: $componentCategory) {
           pageInfo {
             endCursor
             hasNextPage
@@ -96,7 +69,7 @@ QUERY_GET_COMPONENTS_INFRASTRUCTURE = gql(
         }
       }
     }
-"""
+    """
 )
 
 MUTATION_RELATIONSHIP_CREATE = gql(
@@ -156,7 +129,8 @@ def parse_description_key_value(description: Optional[str]) -> dict[str, str]:
 def extract_rules_from_definition(node: dict[str, Any]) -> Optional[dict[str, Any]]:
     """
     If definition has 'service_tag_key' in description, parse and return a rule dict.
-    Returns None if skipped.
+    Returns None if skipped. Logs a warning when description has service_tag_key
+    but is missing environment_tag_key or environment_tag_value.
     """
     description = (node.get("description") or "") or ""
     if "service_tag_key" not in description:
@@ -166,6 +140,14 @@ def extract_rules_from_definition(node: dict[str, Any]) -> Optional[dict[str, An
     environment_tag_key = parsed.get("environment_tag_key")
     environment_tag_value = parsed.get("environment_tag_value")
     if not service_tag_key or not environment_tag_key or not environment_tag_value:
+        name = node.get("name") or node.get("id") or "unknown"
+        print(
+            f"  Warning: Skipping relationship definition '{name}': description contains "
+            "service_tag_key but is missing environment_tag_key or environment_tag_value. "
+            "Expected comma-separated key:value pairs, e.g. "
+            "service_tag_key:service,environment_tag_key:environment,environment_tag_value:staging",
+            file=sys.stderr,
+        )
         return None
     return {
         "relationship_definition_id": node["id"],
@@ -235,17 +217,14 @@ def make_client(token: str) -> Client:
 
 def execute(client: Client, document: Any, variables: Optional[dict] = None) -> dict:
     """Execute a query or mutation and return the raw result (data payload)."""
-    result = client.execute(document, variable_values=variables or {})
-    if isinstance(result, dict) and "data" in result:
-        return result["data"]
-    return result if isinstance(result, dict) else {}
+    return client.execute(document, variable_values=variables or {})
 
 
 def paginate(
     client: Client,
     document: Any,
     path: list[str],
-    cursor_var: str = "endCursor",
+    variables_extra: Optional[dict] = None,
     verbose: bool = False,
 ) -> list[dict]:
     """Follow pageInfo.hasNextPage / endCursor and collect all nodes."""
@@ -253,7 +232,9 @@ def paginate(
     cursor: Optional[str] = None
     page = 0
     while True:
-        variables = {cursor_var: cursor} if cursor else {}
+        variables = dict(variables_extra or {})
+        if cursor is not None:
+            variables["endCursor"] = cursor
         data = execute(client, document, variables)
         current = data
         for key in path[:-1]:
@@ -329,16 +310,18 @@ def main() -> int:
         print("Fetching default components...")
     default_components = paginate(
         client,
-        QUERY_GET_COMPONENTS_DEFAULT,
+        QUERY_GET_COMPONENTS,
         ["account", "services"],
+        variables_extra={"componentCategory": "default"},
         verbose=args.verbose,
     )
     if args.verbose:
         print("Fetching infrastructure components...")
     infra_components = paginate(
         client,
-        QUERY_GET_COMPONENTS_INFRASTRUCTURE,
+        QUERY_GET_COMPONENTS,
         ["account", "services"],
+        variables_extra={"componentCategory": "infrastructure"},
         verbose=args.verbose,
     )
     if args.verbose:
