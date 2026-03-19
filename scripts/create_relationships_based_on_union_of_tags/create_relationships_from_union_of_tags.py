@@ -132,7 +132,7 @@ def extract_rules_from_definition(node: dict[str, Any]) -> Optional[dict[str, An
     Returns None if skipped. Logs a warning when description has service_tag_key
     but is missing environment_tag_key or environment_tag_value.
     """
-    description = (node.get("description") or "") or ""
+    description = (node.get("description") or "")
     if "service_tag_key" not in description:
         return None
     parsed = parse_description_key_value(description)
