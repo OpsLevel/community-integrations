@@ -15,7 +15,7 @@ LIST_CUSTOM_PROPERTIES_QUERY = """
           }
           nodes {
             name
-            aliases
+            alias
             schema
             id
           }
@@ -102,18 +102,16 @@ def fetch_custom_properties():
 
 def deduplicate_properties_by_alias(properties):
     """
-    Return properties with duplicate aliases removed, keeping the first occurrence.
-    Uses the first alias from each property's aliases list.
+    Return properties with duplicate alias values removed, keeping the first occurrence.
+    Uses the singular `alias` field from each property definition.
     """
     seen_aliases = set()
     deduplicated = []
     for prop in properties:
-        alias = prop["aliases"][0] if prop.get("aliases") else None
-        if alias is not None and alias not in seen_aliases:
+        alias = prop["alias"]
+        if alias not in seen_aliases:
             seen_aliases.add(alias)
             deduplicated.append(prop)
-        elif alias is None:
-            deduplicated.append(prop)  # Keep properties with no aliases
     return deduplicated
 
 
@@ -123,14 +121,14 @@ def main():
 
     for index, property_info in enumerate(properties, 1):
         property_name = property_info["name"]
-        property_alias = property_info["aliases"][0]  # Only the first alias
+        property_alias = property_info["alias"]
         property_schema_type = property_info["schema"]["type"]
         print(f"{index}. Property Name: {property_name}, Alias: {property_alias}, Schema Type: {property_schema_type}")
 
     selected_index = int(input("Select a property by entering its index (only booleans and arrays are supported at this time): ")) - 1
     if 0 <= selected_index < len(properties):
         selected_property = properties[selected_index]
-        print(f"You selected: {selected_property['name']} with alias: {selected_property['aliases'][0]} and schema type: {selected_property['schema']['type']}")
+        print(f"You selected: {selected_property['name']} with alias: {selected_property['alias']} and schema type: {selected_property['schema']['type']}")
 
         #TODO: Add support for other schema types if needed, such as:
         # - text
@@ -156,7 +154,7 @@ def execute_boolean_mutation(property_info):
     while has_next_page:
         # Execute the GraphQL query using the selected alias as the tag key
         response_services_by_tag = opslevel_graphql_query(
-            SERVICES_BY_TAG_QUERY, variables={"endCursor": cursor, "tag_key": property_info["aliases"][0]}
+            SERVICES_BY_TAG_QUERY, variables={"endCursor": cursor, "tag_key": property_info["alias"]}
         )
 
         # Loop through the service nodes to confirm the key in tags nodes matches the selected alias
@@ -164,12 +162,12 @@ def execute_boolean_mutation(property_info):
         for service in services:
             tags = service["tags"]["nodes"]
             for tag in tags:
-                if tag["key"] == property_info["aliases"][0]:
+                if tag["key"] == property_info["alias"]:
                     print(f"Service ID: {service['id']} has the selected alias as a tag.")
                     # Execute the mutation query
                     response = opslevel_graphql_query(
                         UPDATE_PROPERTY_MUTATION,
-                        variables={"service_id": service["id"], "definition_alias": property_info["aliases"][0], "value": tag["value"]}
+                        variables={"service_id": service["id"], "definition_alias": property_info["alias"], "value": tag["value"]}
                     )
                     # # Process the mutation response if needed
                     print("Bool mutation executed.")
@@ -186,20 +184,20 @@ def execute_boolean_mutation(property_info):
 def execute_array_mutation(property_info):
     # Execute the GraphQL query using the selected alias as the tag key
     response_services_by_tag = opslevel_graphql_query(
-        SERVICES_BY_TAG_QUERY, variables={"endCursor": None, "tag_key": property_info["aliases"][0]}
+        SERVICES_BY_TAG_QUERY, variables={"endCursor": None, "tag_key": property_info["alias"]}
     )
 
     # Loop through the service nodes to confirm the key in tags nodes matches the selected alias
     services = response_services_by_tag["data"]["account"]["services"]["nodes"]
     for service in services:
         tags = service["tags"]["nodes"]
-        array_values = [tag_node["value"] for tag_node in tags if tag_node["key"] == property_info["aliases"][0]]
+        array_values = [tag_node["value"] for tag_node in tags if tag_node["key"] == property_info["alias"]]
         # Convert array values to JSON string
         array_values_json = json.dumps(array_values)
         # Execute the mutation query
         response = opslevel_graphql_query(
             UPDATE_PROPERTY_MUTATION,
-            variables={"service_id": service["id"], "definition_alias": property_info["aliases"][0], "value": array_values_json}
+            variables={"service_id": service["id"], "definition_alias": property_info["alias"], "value": array_values_json}
         )
         # Process the mutation response if needed
         print("Array mutation executed.")
