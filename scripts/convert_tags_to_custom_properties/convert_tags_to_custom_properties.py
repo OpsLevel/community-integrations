@@ -108,7 +108,9 @@ def deduplicate_properties_by_alias(properties):
     seen_aliases = set()
     deduplicated = []
     for prop in properties:
-        alias = prop["alias"]
+        alias = prop.get("alias")
+        if alias is None:
+            continue
         if alias not in seen_aliases:
             seen_aliases.add(alias)
             deduplicated.append(prop)
@@ -172,13 +174,13 @@ def execute_boolean_mutation(property_info):
                     # # Process the mutation response if needed
                     print("Bool mutation executed.")
                     print(response)
-        else:
-            print("No other services found with tags matching the boolean key. Completed!")
 
         # Check if there are more pages
         services_page_info = response_services_by_tag["data"]["account"]["services"]["pageInfo"]
         has_next_page = services_page_info["hasNextPage"]
         cursor = services_page_info["endCursor"]
+
+    print("No other services found with tags matching the boolean key. Completed!")
 
 
 def execute_array_mutation(property_info):
