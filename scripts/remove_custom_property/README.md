@@ -2,7 +2,7 @@
 
 `remove_infra_property.py` deletes a custom property (default: `name`) from all
 AWS-backed infrastructure component types via the OpsLevel GraphQL API. Each type
-holds its own copy of the property, so the script finds all 21 and deletes each
+holds its own copy of the property, so the script finds all infra components and deletes each
 one (`propertyDefinitionDelete` — there's no bulk mutation). Dry-run by default.
 
 ## Setup
@@ -14,9 +14,9 @@ export OPSLEVEL_API_TOKEN=xxxxxxxx
 ## Run
 
 ```
-python remove_infra_property.py           # 1. dry run: confirms 21 matches, deletes nothing
-# set PREFIX="aws_dynamodb", APPLY=True   # 2. delete one type first to confirm it works
-# set PREFIX="aws_", keep APPLY=True      # 3. run the rest
+python3 remove_custom_property.py          # 1. dry run: confirms matches, deletes nothing
+# edit PREFIX="aws_dynamodb", APPLY=True   # 2. delete one type first to confirm it works
+# edit PREFIX="aws_", keep APPLY=True      # 3. run the rest
 ```
 Output per type: would delete <id> (dry run), deleted, FAILED [...], or no 'name' (skipped). No bulk rollback, so the log is your record.
 ## Config (top of file)
