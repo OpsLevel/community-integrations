@@ -18,6 +18,7 @@ python remove_infra_property.py           # 1. dry run: confirms 21 matches, del
 # set PREFIX="aws_dynamodb", APPLY=True   # 2. delete one type first to confirm it works
 # set PREFIX="aws_", keep APPLY=True      # 3. run the rest
 ```
+Output per type: would delete <id> (dry run), deleted, FAILED [...], or no 'name' (skipped). No bulk rollback, so the log is your record.
 ## Config (top of file)
 
 - `PROP` — property to remove (alias or name). Default `name`.
