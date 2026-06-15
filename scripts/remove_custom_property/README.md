@@ -1,6 +1,6 @@
 # Remove a Custom Property Across OpsLevel Infra Types
 
-`remove_infra_property.py` deletes a custom property (default: `name`) from all
+`remove_custom_property.py` deletes a custom property (default: `name`) from all
 AWS-backed infrastructure component types via the OpsLevel GraphQL API. Each type
 holds its own copy of the property, so the script finds all infra components and deletes each
 one (`propertyDefinitionDelete` — there's no bulk mutation). Dry-run by default.
