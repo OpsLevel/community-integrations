@@ -5,7 +5,7 @@ TOKEN  = os.environ["OPSLEVEL_API_TOKEN"] # your OpsLevel API token (set it in t
 URL    = "https://app.opslevel.com/graphql" # OpsLevel's single GraphQL endpoint
 PROP   = "name"  # the property to remove (matched by alias OR display name)
 PREFIX = "aws_"   # which component types count as "infra": those whose alias starts with this
-APPLY  = True    # safety switch: False = dry run (prints only), True = actually deletes
+APPLY  = False    # safety switch: False = dry run (prints only), True = actually deletes
 
 def gql(q, v=None):
     r = requests.post(URL, headers={"Authorization": f"Bearer {TOKEN}"}, json={"query": q, "variables": v or {}})
