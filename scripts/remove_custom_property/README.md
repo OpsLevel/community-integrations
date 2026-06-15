@@ -7,8 +7,7 @@ one (`propertyDefinitionDelete` — there's no bulk mutation). Dry-run by defaul
 
 ## Setup
 
-​```
-bash
+​```bash
 pip install requests
 export OPSLEVEL_API_TOKEN=xxxxxxxx
 ​```
