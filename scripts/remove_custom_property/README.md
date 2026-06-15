@@ -6,11 +6,10 @@ holds its own copy of the property, so the script finds all 21 and deletes each
 one (`propertyDefinitionDelete` — there's no bulk mutation). Dry-run by default.
 
 ## Setup
-
-​```
+```
 pip install requests
 export OPSLEVEL_API_TOKEN=xxxxxxxx
-​```
+```
 
 ## Run
 
