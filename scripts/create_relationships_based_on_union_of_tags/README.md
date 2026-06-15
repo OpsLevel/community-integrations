@@ -22,6 +22,9 @@ NOTE: This will only create relationships for the Service componentType at this 
 
 3. **Creation**: For each (default component, infrastructure component, rule) triple, it calls the `relationshipCreate` mutation with `source` = default component, `target` = infrastructure component, `type: "related_to"`, and the relationship definition id.
 
+![Screenshot of Production Resources Linked](./images/Production_Resources_example.png)
+![Screenshot of Staging Resources Linked](./images/Staging_Resources_example.png)
+
 ## Requirements
 
 - Python 3.10+
