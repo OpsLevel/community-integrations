@@ -21,11 +21,13 @@ in the git repository.
 The script excludes the `properties:` section from exported YAML by default. Use
 `--include properties` to keep it.
 
-Components without a linked repository are skipped. Their OpsLevel `htmlUrl` is
-written to `skipped_components_with_missing_repo_links.txt`.
+Components without a linked repository are skipped by default. Their OpsLevel
+`htmlUrl` is written to `skipped_components_with_missing_repo_links.txt`. Use
+`--include-no-repo` to export those components as well.
 
 Use `--dry-run` to preview which components would be exported without writing
-`opslevelyml_repo/`. The skipped-components file is still written in dry-run mode.
+`opslevelyml_repo/`. The skipped-components file is still written in dry-run mode
+unless `--include-no-repo` is set.
 
 Requirements:
 
@@ -35,13 +37,15 @@ Requirements:
 To run this:
 
 1. Add your api token to an `OPSLEVEL_API_TOKEN` environment variable
-2. Execute the script. You will be prompted to select which component types to export.
-3. Execute the commands below.
+2. Run the script. You will be prompted to select which component types to export,
+   unless you pass `--component-types` for non-interactive use.
 
 ```bash
 python ./opslevel_yml_export_for_all_services.py
 python ./opslevel_yml_export_for_all_services.py --include properties
 python ./opslevel_yml_export_for_all_services.py --dry-run
+python ./opslevel_yml_export_for_all_services.py --include-no-repo
+python ./opslevel_yml_export_for_all_services.py --component-types service backend frontend
 ```
 
 When prompted, enter comma-separated numbers for the component types you want,
@@ -50,7 +54,7 @@ or `a` to export all default component types.
 Example:
 
 ```
-python ./opslevel_yml_export_for_all_services.py
+python opslevel_yml_export_for_all_services.py
 
 Select component type(s) to export opslevel.yml for (comma-separated numbers, or enter 'a' for all):
 1. api

@@ -1,4 +1,5 @@
 import argparse
+import contextlib
 import os
 import sys
 
@@ -17,7 +18,6 @@ COMPONENT_TYPES_QUERY = """
     query componentTypes($endCursor: String) {
         account {
             componentTypes(after: $endCursor) {
-                totalCount
                 pageInfo {
                     hasNextPage
                     endCursor
@@ -36,8 +36,6 @@ LIST_SERVICES_QUERY = """
     query services($endCursor: String) {
         account {
             services(componentCategory: "default", after: $endCursor) {
-                totalCount
-                filteredCount
                 pageInfo {
                     hasNextPage
                     endCursor
@@ -74,7 +72,6 @@ FETCH_OPSLEVEL_YML_FOR_SERVICE_QUERY = """
 """
 
 
-# Function to make a GraphQL query
 def opslevel_graphql_query(query, variables=None):
     headers = {
         "Content-Type": "application/json",
@@ -82,7 +79,26 @@ def opslevel_graphql_query(query, variables=None):
     }
     data = {"query": query, "variables": variables}
     response = requests.post(OPSLEVEL_ENDPOINT, json=data, headers=headers)
-    return response.json()
+
+    try:
+        response.raise_for_status()
+    except requests.HTTPError as exc:
+        raise RuntimeError(
+            f"OpsLevel API request failed with HTTP {response.status_code}: "
+            f"{response.text}"
+        ) from exc
+
+    payload = response.json()
+    if errors := payload.get("errors"):
+        messages = "; ".join(
+            error.get("message", str(error)) for error in errors
+        )
+        raise RuntimeError(f"OpsLevel GraphQL error: {messages}")
+
+    if not payload.get("data"):
+        raise RuntimeError(f"OpsLevel API returned no data: {payload}")
+
+    return payload
 
 
 def fetch_default_component_types():
@@ -148,24 +164,59 @@ def has_linked_repo(node):
     return any(repo.get("id") for repo in repo_nodes)
 
 
-def export_opslevel_yml_files(selected_aliases, excluded_sections, dry_run=False):
+def get_component_type_alias(node):
+    component_type = node.get("type") or {}
+    return component_type.get("alias")
+
+
+def write_opslevel_yml_for_component(node, component_type, excluded_sections):
+    service_slug = node["slug"]
+    service_id = node["id"]
+    response = opslevel_graphql_query(
+        FETCH_OPSLEVEL_YML_FOR_SERVICE_QUERY, variables={"id": service_id}
+    )
+    yaml_data = response["data"]["account"]["configFile"]["yaml"]
+    yaml_data = post_process_opslevel_yml(yaml_data, excluded_sections)
+    output_dir = os.path.join(OUTPUT_BASE_DIR, component_type, service_slug)
+    os.makedirs(output_dir, exist_ok=True)
+    output_path = os.path.join(output_dir, "opslevel.yml")
+    with open(output_path, "w") as f:
+        f.write(yaml_data)
+
+
+def export_opslevel_yml_files(
+    selected_aliases, excluded_sections, dry_run=False, include_no_repo=False
+):
     end_cursor = None
     has_next_page = True
     skipped_count = 0
+    skipped_no_type_count = 0
+    no_repo_exported_count = 0
     exported_count = 0
 
-    with open(SKIPPED_COMPONENTS_FILE, "w") as skipped_file:
+    skipped_file_context = (
+        open(SKIPPED_COMPONENTS_FILE, "w")
+        if not include_no_repo
+        else contextlib.nullcontext()
+    )
+
+    with skipped_file_context as skipped_file:
         while has_next_page:
             response = opslevel_graphql_query(
                 LIST_SERVICES_QUERY, variables={"endCursor": end_cursor}
             )
             nodes = response["data"]["account"]["services"]["nodes"]
             for node in nodes:
-                component_type = node["type"]["alias"]
+                component_type = get_component_type_alias(node)
+                if not component_type:
+                    skipped_no_type_count += 1
+                    continue
+
                 if component_type not in selected_aliases:
                     continue
 
-                if not has_linked_repo(node):
+                missing_repo = not has_linked_repo(node)
+                if missing_repo and not include_no_repo:
                     skipped_file.write(f"{node['htmlUrl']}\n")
                     skipped_count += 1
                     continue
@@ -173,24 +224,18 @@ def export_opslevel_yml_files(selected_aliases, excluded_sections, dry_run=False
                 service_slug = node["slug"]
                 if dry_run:
                     exported_count += 1
+                    if missing_repo:
+                        no_repo_exported_count += 1
                     print(
                         f"[dry-run] Would export: "
                         f"{component_type}/{service_slug}/opslevel.yml"
                     )
                     continue
 
-                service_id = node["id"]
-                response_2 = opslevel_graphql_query(
-                    FETCH_OPSLEVEL_YML_FOR_SERVICE_QUERY, variables={"id": service_id}
-                )
-                yaml_data = response_2["data"]["account"]["configFile"]["yaml"]
-                yaml_data = post_process_opslevel_yml(yaml_data, excluded_sections)
-                output_dir = os.path.join(OUTPUT_BASE_DIR, component_type, service_slug)
-                os.makedirs(output_dir, exist_ok=True)
-                output_path = os.path.join(output_dir, "opslevel.yml")
-                with open(output_path, "w") as f:
-                    f.write(yaml_data)
+                write_opslevel_yml_for_component(node, component_type, excluded_sections)
                 exported_count += 1
+                if missing_repo:
+                    no_repo_exported_count += 1
 
             page_info = response["data"]["account"]["services"]["pageInfo"]
             has_next_page = page_info["hasNextPage"]
@@ -204,10 +249,20 @@ def export_opslevel_yml_files(selected_aliases, excluded_sections, dry_run=False
     else:
         print(f"\nExported {exported_count} component(s) to {OUTPUT_BASE_DIR}.")
 
-    if skipped_count:
+    if include_no_repo:
+        if no_repo_exported_count:
+            print(
+                f"Included {no_repo_exported_count} component(s) with no linked repo."
+            )
+    else:
         print(
             f"Skipped {skipped_count} component(s) with no linked repo. "
             f"See {SKIPPED_COMPONENTS_FILE}."
+        )
+
+    if skipped_no_type_count:
+        print(
+            f"Skipped {skipped_no_type_count} component(s) with no component type."
         )
 
 
@@ -215,6 +270,9 @@ def post_process_opslevel_yml(yaml_data, excluded_sections):
     if "properties" not in excluded_sections:
         return yaml_data
 
+    # Strip excluded sections line-by-line instead of parsing with a YAML library
+    # so OpsLevel's original formatting, key order, and comments are preserved.
+    # This assumes OpsLevel emits top-level keys with 2-space indentation.
     lines = yaml_data.splitlines(keepends=True)
     result = []
     i = 0
@@ -237,24 +295,63 @@ def post_process_opslevel_yml(yaml_data, excluded_sections):
     return "".join(result)
 
 
+def resolve_component_type_selection(component_types, component_type_args):
+    available_aliases = {component_type["alias"] for component_type in component_types}
+
+    if component_type_args is None:
+        return prompt_component_type_selection(component_types)
+
+    selected_aliases = set(component_type_args)
+    unknown_aliases = sorted(selected_aliases - available_aliases)
+    if unknown_aliases:
+        print(
+            "Unknown component type(s): "
+            f"{', '.join(unknown_aliases)}. "
+            f"Available: {', '.join(sorted(available_aliases))}",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    return selected_aliases
+
+
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Export OpsLevel opslevel.yml files for all components."
     )
     parser.add_argument(
+        "--component-types",
+        nargs="+",
+        metavar="ALIAS",
+        help=(
+            "Component type aliases to export (e.g. service backend). "
+            "Skips the interactive prompt."
+        ),
+    )
+    parser.add_argument(
         "--include",
         nargs="+",
-        choices=["properties"],
+        choices=sorted(DEFAULT_EXCLUDED_SECTIONS),
         default=[],
         metavar="SECTION",
         help="Include optional YAML sections in the export (default: properties are excluded)",
+    )
+    parser.add_argument(
+        "--include-no-repo",
+        action="store_true",
+        help=(
+            "Also export components with no linked repository. "
+            "By default these are skipped and written to "
+            "skipped_components_with_missing_repo_links.txt."
+        ),
     )
     parser.add_argument(
         "--dry-run",
         action="store_true",
         help=(
             "List components that would be exported without writing opslevel.yml files. "
-            "Still writes skipped_components_with_missing_repo_links.txt."
+            "Still writes skipped_components_with_missing_repo_links.txt unless "
+            "--include-no-repo is set."
         ),
     )
     return parser.parse_args()
@@ -270,11 +367,18 @@ def main():
         print("No component types with category 'default' were found.", file=sys.stderr)
         sys.exit(1)
 
-    selected_aliases = prompt_component_type_selection(component_types)
+    selected_aliases = resolve_component_type_selection(
+        component_types, args.component_types
+    )
     if args.dry_run:
         print("\n[dry-run] No opslevel.yml files will be written.")
     print(f"\nExporting opslevel.yml for: {', '.join(sorted(selected_aliases))}")
-    export_opslevel_yml_files(selected_aliases, excluded_sections, dry_run=args.dry_run)
+    export_opslevel_yml_files(
+        selected_aliases,
+        excluded_sections,
+        dry_run=args.dry_run,
+        include_no_repo=args.include_no_repo,
+    )
 
 
 if __name__ == "__main__":
