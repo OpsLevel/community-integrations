@@ -194,13 +194,11 @@ def export_opslevel_yml_files(
     no_repo_exported_count = 0
     exported_count = 0
 
-    skipped_file_context = (
-        open(SKIPPED_COMPONENTS_FILE, "w")
-        if not include_no_repo
-        else contextlib.nullcontext()
-    )
+    with contextlib.ExitStack() as stack:
+        skipped_file = None
+        if not include_no_repo:
+            skipped_file = stack.enter_context(open(SKIPPED_COMPONENTS_FILE, "w"))
 
-    with skipped_file_context as skipped_file:
         while has_next_page:
             response = opslevel_graphql_query(
                 LIST_SERVICES_QUERY, variables={"endCursor": end_cursor}
@@ -216,7 +214,7 @@ def export_opslevel_yml_files(
                     continue
 
                 missing_repo = not has_linked_repo(node)
-                if missing_repo and not include_no_repo:
+                if missing_repo and skipped_file is not None:
                     skipped_file.write(f"{node['htmlUrl']}\n")
                     skipped_count += 1
                     continue
