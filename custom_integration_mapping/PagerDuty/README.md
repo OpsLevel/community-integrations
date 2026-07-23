@@ -56,12 +56,12 @@ The extract definition specifies how OpsLevel will pull data from PagerDuty.
       iterator: ".services"
       http_polling:
         method: GET
-        url: https://api.pagerduty.com/services?limit=100
+        url: https://api.pagerduty.com/services?limit=500
         headers:
         - name: Authorization
           value: Token token={{ 'pd_token' | secret }}
         - name: Accept
-           value: application/vnd.pagerduty+json;version=2
+          value: application/vnd.pagerduty+json;version=2
     ```
 *   **`external_kind`**: A unique identifier for the type of data being extracted.
 *   **`external_id: ".id"`**: A JQ expression to select PagerDuty's Service ID as the unique identifier.
@@ -91,16 +91,6 @@ The transformation definition maps the extracted PagerDuty data to your OpsLevel
 *   **`opslevel_identifier`**: This expression matches PagerDuty service names to OpsLevel service aliases by lowercasing the name and converting spaces to dashes.
 *   **`on_component_not_found: skip`**: Silently skips any PagerDuty services that don't match an existing OpsLevel service alias, rather than creating new components or suggestions. Use `suggest` instead if you'd rather review unmatched services as detected component recommendations.
 
----
-
-### Important Considerations
-
-*   **Pagination**: This template does not paginate beyond `limit=500`. If you have more services than that in PagerDuty, some will not be synced. Verify your total service count in PagerDuty before relying on this integration for full coverage.
-*   **Alias matching**: The `opslevel_identifier` JQ expression above is a best-effort default, not a universal solution. Test it against a small number of services first (see Step 6) before trusting it across your full catalog.
-*   **JQ expressions**: Both the extractor and transform definitions use [JQ](https://jqlang.org/) syntax to parse and reshape API responses. If you're unfamiliar with JQ, [jqplay.org](https://jqplay.org) is a useful sandbox for testing expressions against sample PagerDuty payloads before wiring them into the live integration.
-
----
-
 ### Step 6: Test and Sync the Integration
 
 After configuring both definitions, you can test and activate your integration.
@@ -126,3 +116,13 @@ inputs:
 Note: `.service.properties.pd_service_id` resolves via the property's **identifier**, not its display name — confirm this matches the identifier shown on your property's Edit page (Step 1) if you named it something other than `pd_service_id`, since identifiers are auto-generated from the display name and may not match exactly (e.g. spaces, casing).
 
 This is especially useful for Actions that trigger PagerDuty incidents directly from OpsLevel, where the Service ID needs to be passed in the payload.
+
+---
+
+### Important Considerations
+
+*   **Pagination**: This template does not paginate beyond `limit=500`. If you have more services than that in PagerDuty, some will not be synced. Verify your total service count in PagerDuty before relying on this integration for full coverage.
+*   **Alias matching**: The `opslevel_identifier` JQ expression above is a best-effort default, not a universal solution. Test it against a small number of services first (see Step 6) before trusting it across your full catalog.
+*   **JQ expressions**: Both the extractor and transform definitions use [JQ](https://jqlang.org/) syntax to parse and reshape API responses. If you're unfamiliar with JQ, [jqplay.org](https://jqplay.org) is a useful sandbox for testing expressions against sample PagerDuty payloads before wiring them into the live integration.
+
+---
