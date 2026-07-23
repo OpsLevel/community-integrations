@@ -19,9 +19,10 @@ Both stages are configured in YAML, requiring no coding and allowing for configu
 
 ### Step 1: Customize the Service property schema
 
-**Define Custom Properties**: On the Component Edit Page, define a relevant custom property:
+1.  **Define Custom Properties**: On the Component Edit Page, define a relevant custom property:
     *   **PD Service ID**: Type `Text` (String).
-      <img width="1321" height="948" alt="image" src="https://github.com/user-attachments/assets/32e61f2f-6779-4a05-9bbd-f3ae6544c402" />
+
+    <img width="1772" height="1282" alt="image" src="https://github.com/user-attachments/assets/32e61f2f-6779-4a05-9bbd-f3ae6544c402" />
 
 
 ### Step 2: Create a Secret in OpsLevel for PagerDuty Authentication
@@ -47,48 +48,58 @@ The extract definition specifies how OpsLevel will pull data from PagerDuty.
 1.  **Access Configuration**: Within your custom PagerDuty integration, find the **Extract and Transform Configuration** section.
 2.  **Define Extractor**: Configure the extractor definition in YAML as follows:
 
-```yaml
----
-extractors:
-- external_kind: pagerduty_service
-  external_id: ".id"
-  http_polling:
-    url: https://api.pagerduty.com/services?limit=100
-    method: GET
-    headers:
-    - name: Authorization
-      value: Token token={{ 'pd_token' | secret }}
-    - name: Accept
-      value: application/vnd.pagerduty+json;version=2
-  iterator: ".services"
-```
+    ```yaml
+    ---
+    extractors:
+    - external_kind: pagerduty_service
+      external_id: ".id"
+      iterator: ".services"
+      http_polling:
+        method: GET
+        url: https://api.pagerduty.com/services?limit=100
+        headers:
+        - name: Authorization
+          value: Token token={{ 'pd_token' | secret }}
+        - name: Accept
+           value: application/vnd.pagerduty+json;version=2
+    ```
 *   **`external_kind`**: A unique identifier for the type of data being extracted.
 *   **`external_id: ".id"`**: A JQ expression to select PagerDuty's Service ID as the unique identifier.
+*   **`iterator: ".services"`**: This JQ expression tells OpsLevel to iterate over each service in PagerDuty's response, treating each as an individual object.
 *   **`http_polling`**: This section defines how OpsLevel will actively poll the PagerDuty API.
 *   **`method: GET`**: The HTTP method for the API call.
-*   **`iterator: ".services"`**: This JQ expression tells OpsLevel to iterate over each service in PagerDuty's response, treating each as an individual object.
+*   **`limit=500`**: This config does not implement pagination handling. Setting `limit=500` (PagerDuty's documented maximum) avoids silent truncation.
 
 ### Step 5: Configure the Transformation Definition
 
 The transformation definition maps the extracted PagerDuty data to your OpsLevel component properties.
 
-**Define Transformer**: Configure the transform definition in YAML as follows:
+1. **Define Transformer**: Configure the transform definition in YAML as follows:
 
-```yaml
----
-transforms:
-- external_kind: pagerduty_service
-  opslevel_kind: service
-  opslevel_identifier: .name | ascii_downcase | gsub(" "; "-")
-  on_component_not_found: skip
-  properties:
-    pd_service_id: ".id"
-
-```
+    ```yaml
+    ---
+    transforms:
+    - external_kind: pagerduty_service
+      opslevel_kind: service
+      opslevel_identifier: .name | ascii_downcase | gsub(" "; "-")
+      on_component_not_found: skip
+      properties:
+        pd_service_id: ".id"
+    ```
 *   **`external_kind: pagerduty_service`**: This maps the extracted PagerDuty data to the custom properties in OpsLevel.
 *   **`opslevel_kind: service`**: This maps PagerDuty services to the correct component type in OpsLevel (service).
-*   **`opslevel_identifier`**: Matches PagerDuty service names to OpsLevel service aliases (lowercased, spaces converted to dashes). If your PagerDuty service names don't align with your OpsLevel aliases, adjust this expression accordingly.
+*   **`opslevel_identifier`**: This expression matches PagerDuty service names to OpsLevel service aliases by lowercasing the name and converting spaces to dashes.
 *   **`on_component_not_found: skip`**: Silently skips any PagerDuty services that don't match an existing OpsLevel service alias, rather than creating new components or suggestions. Use `suggest` instead if you'd rather review unmatched services as detected component recommendations.
+
+---
+
+### Important Considerations
+
+*   **Pagination**: This template does not paginate beyond `limit=500`. If you have more services than that in PagerDuty, some will not be synced. Verify your total service count in PagerDuty before relying on this integration for full coverage.
+*   **Alias matching**: The `opslevel_identifier` JQ expression above is a best-effort default, not a universal solution. Test it against a small number of services first (see Step 6) before trusting it across your full catalog.
+*   **JQ expressions**: Both the extractor and transform definitions use [JQ](https://jqlang.org/) syntax to parse and reshape API responses. If you're unfamiliar with JQ, [jqplay.org](https://jqplay.org) is a useful sandbox for testing expressions against sample PagerDuty payloads before wiring them into the live integration.
+
+---
 
 ### Step 6: Test and Sync the Integration
 
@@ -112,5 +123,6 @@ inputs:
     defaultValueExpression: .service.properties.pd_service_id
     required: true
 ```
+Note: `.service.properties.pd_service_id` resolves via the property's **identifier**, not its display name — confirm this matches the identifier shown on your property's Edit page (Step 1) if you named it something other than `pd_service_id`, since identifiers are auto-generated from the display name and may not match exactly (e.g. spaces, casing).
 
 This is especially useful for Actions that trigger PagerDuty incidents directly from OpsLevel, where the Service ID needs to be passed in the payload.
