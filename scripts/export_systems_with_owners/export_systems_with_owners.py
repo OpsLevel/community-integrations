@@ -2,7 +2,7 @@ import os
 import csv
 import requests
 
-OPSLEVEL_API_TOKEN = os.environ["OPSLEVEL_API_TOKEN"]
+OPSLEVEL_API_TOKEN = os.environ.get("OPSLEVEL_API_TOKEN")
 OPSLEVEL_ENDPOINT = "https://app.opslevel.com/graphql"
 
 LIST_SYSTEMS_WITH_OWNERS_QUERY = """
@@ -26,6 +26,7 @@ LIST_SYSTEMS_WITH_OWNERS_QUERY = """
     }
 """
 
+
 def opslevel_graphql_query(query, variables=None):
     headers = {
         "Content-Type": "application/json",
@@ -35,7 +36,10 @@ def opslevel_graphql_query(query, variables=None):
     response = requests.post(OPSLEVEL_ENDPOINT, json=data, headers=headers)
     if response.status_code != 200:
         raise Exception(f"OpsLevel request failed: {response.content.decode()}")
-    return response.json()
+    result = response.json()
+    if "errors" in result:
+        raise Exception(f"OpsLevel GraphQL errors: {result['errors']}")
+    return result
 
 
 def fetch_systems():
