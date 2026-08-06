@@ -9,8 +9,8 @@ Prerequisites:
 
 Requirements:
 
-- Python 3.10.10 or higher
-- `requests` & `csv` libraries are installed
+- Python 3.11 or higher
+- `requests` library is installed
 
 To run this:
 
