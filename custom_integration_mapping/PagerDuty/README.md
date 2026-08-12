@@ -90,7 +90,7 @@ The transformation definition maps the extracted PagerDuty data to your OpsLevel
 *   **`opslevel_kind: service`**: This maps PagerDuty services to the correct component type in OpsLevel (service).
 *   **`opslevel_identifier`**: This expression matches PagerDuty service names to OpsLevel service aliases by lowercasing the name and converting spaces to dashes.
 *   **`on_component_not_found: suggest`**: Defaults to surfacing any unmatched PagerDuty services as detected component recommendations (Catalog > Detected Components) rather than silently discarding them — this gives you visibility into what didn't match, rather than assuming the alias logic worked correctly.
-*   **Consider `skip` instead if your PagerDuty setup doesn't map 1:1 to OpsLevel Services** — for example, if your organization has set up PagerDuty Services per-team rather than per-service. In that case, most PagerDuty "services" won't correspond to any single OpsLevel service alias, and `suggest` would generate a large number of irrelevant detected-component recommendations. Use `skip` to suppress those instead:
+    * **Consider `skip` instead if your PagerDuty setup doesn't map 1:1 to OpsLevel Services** — for example, if your organization has set up PagerDuty Services per-team rather than per-service. In that case, most PagerDuty "services" won't correspond to any single OpsLevel service alias, and `suggest` would generate a large number of irrelevant detected-component recommendations. Use `skip` to suppress those instead:
     ```yaml
         on_component_not_found: skip
     ```
