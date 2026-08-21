@@ -16,12 +16,9 @@ Both stages are configured in YAML.
 
 ### Step 1: Confirm your classification property
 
-**Confirm the property exists**: On the Component Edit Page, confirm your account has a custom property that classifies a component's data sensitivity (e.g. **Data Classification**, with values like `Public` / `Internal` / `Confidential`).
+**Define a Custom Property**: Go to Settings → Customization → Component Type → New Property, and define a custom property that classifies a component's data sensitivity — e.g. **Data Classification**, with an enum schema listing values like `Public` / `Internal` / `Restricted` / `Confidential` / `Archived`.
+
 <img width="1772" height="1282" alt="image" src="https://github.com/user-attachments/assets/571931e6-ea2f-4219-ba2b-54aa1096aefe" />
-
-**Important**: confirm the exact **identifier** of this property (Settings → Custom Properties → Component Type → Custom Property).
-
-Also confirm the exact enum value used for your sensitive classification (e.g. `Public`, `Confidential`) — this must match exactly, including case.
 
 ### Step 2: Create a Secret in OpsLevel for API Authentication
 
