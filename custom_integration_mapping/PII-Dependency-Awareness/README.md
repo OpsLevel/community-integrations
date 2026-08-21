@@ -14,7 +14,7 @@ Both stages are configured in YAML.
 
 ## Setup Instructions
 
-### Step 1: Confirm your classification property
+### Step 1: Create a data classification property
 
 **Define a Custom Property**: Go to Settings → Customization → Component Type → New Property, and define a custom property that classifies a component's data sensitivity — e.g. **Data Classification**, with an enum schema listing values like `Public` / `Internal` / `Restricted` / `Confidential` / `Archived`.
 
