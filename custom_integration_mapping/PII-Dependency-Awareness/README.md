@@ -80,6 +80,8 @@ transforms:
       | {"key": "has_pii_dependency", "value": ($has_confidential | tostring)}
 ```
 
+* **`external_kind: opslevel_service_pii_check`**: This maps the extracted data to the transform below.
+* **`opslevel_kind: service`**: This maps the extracted records to the correct component type in OpsLevel (service).
 * **`opslevel_identifier: ".slug"`**: Matches back to the real service by its slug.
 * **`on_component_not_found: skip`**: Silently skips any record that doesn't resolve to a real Service, rather than erroring.
 * **The JQ expression**: Walks every dependency's properties, checks whether the classification property (`Data Classification` here — **replace with your account's actual property identifier**, equals the sensitive value (`Confidential` here — **replace with your account's actual enum value**, e.g. `PII`), and produces a `has_pii_dependency` tag of `"true"` or `"false"`.
