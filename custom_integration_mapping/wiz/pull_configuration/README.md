@@ -3,20 +3,16 @@
 A **pull**-based custom integration that imports Wiz **Issues** as components —
 the same thing OpsLevel's [built-in Wiz
 integration](https://docs.opslevel.com/docs/wiz-integration) does, assembled by
-hand out of the definitions the product publishes. OpsLevel polls the Wiz
-GraphQL API on a schedule; it's all YAML, with no code to run or host. For a
-push-based alternative against the same API, see [`../issues/`](../issues/).
+hand for maximum flexibility.
 
 ## Do you need this?
 
 Probably not. If your Wiz tenant authenticates against Wiz's commercial endpoint
 (`https://auth.app.wiz.io/oauth/token`), install the built-in integration
-instead — **Integrations → + New Integration → Wiz** — and skip this guide
-entirely. You get the component type, the property schema, the relationship
-rules and the daily sync with no YAML at all.
+instead — **Integrations → + New Integration → Wiz**.
 
-Build it by hand when your tenant authenticates somewhere the built-in
-integration can't reach:
+Build it by hand when you need to customize the behaviour, for example if your
+tenant authenticates somewhere the built-in integration can't reach:
 
 | Tenant | Authentication endpoint |
 | :----- | :---------------------- |
@@ -26,8 +22,8 @@ integration can't reach:
 
 ## Start from the published definitions
 
-OpsLevel publishes the extract and transform definitions its own Wiz integration
-runs. Don't retype them — download them:
+OpsLevel publishes the extract and transform definitions of its builtin Wiz
+integration. Download them:
 
 ```bash
 curl -O https://app.opslevel.com/integration_templates/wiz/default_extract_definition.yml
@@ -37,23 +33,12 @@ curl -O https://app.opslevel.com/integration_templates/wiz/default_transform_def
 *   **`default_extract_definition.yml`** — the OAuth client-credentials block, and a paginated GraphQL query against Wiz's `issuesV2` API that pulls every `OPEN` and `IN_PROGRESS` issue, excluding `INFORMATIONAL` severity.
 *   **`default_transform_definition.yml`** — the mapping from a Wiz issue onto a component's name, aliases, tags and properties.
 
-These are the live files the product loads at boot, so they can't drift from what
-the built-in integration does — which is why this guide links them instead of
-keeping a copy here. What they don't carry is the component type, the secrets
-and the relationship rule; those are the steps below.
+## Step 1: Create a Wiz service account and API endpoint URL
 
-## Step 1: Create a Wiz service account
-
-1.  In Wiz, go to **Settings → Access Management → Service Accounts**, and click **Add Service Account**.
-2.  Set **Type** to **Custom Integration (GraphQL API)**.
-3.  Leave **Projects** empty to sync your whole tenant, or select up to 50 projects to limit what OpsLevel can see.
-4.  Leave **Expiration** empty — syncs start failing once the service account expires.
-5.  Under **API Scopes**, select `read:issues`. That's the only scope needed.
-6.  Copy the **Client ID** and **Client Secret**. Wiz only shows the secret once.
-
-You also need your tenant's **API Endpoint URL**: profile icon → **Tenant Info**
-→ **API Endpoint URL**. It looks like `https://api.us1.app.wiz.io/graphql`. Make
-sure the URL you use ends in `/graphql` — some Wiz screens show it without.
+This step is identical to the built-in integration, so you can follow the
+instructions to:
+- [find your API endpoint URL](https://docs.opslevel.com/docs/wiz-integration#find-your-api-endpoint-url)
+- [create a service account](https://docs.opslevel.com/docs/wiz-integration#create-a-service-account)
 
 ## Step 2: Store the credentials as OpsLevel secrets
 
@@ -99,7 +84,7 @@ about, deleting the rest from the transform definition's `properties` block.
 | `wiz_id` | Wiz Issue Id | string | The Wiz identifier for this issue |
 | `wiz_projects` | Wiz Projects | array of object | The Wiz projects the issue belongs to |
 
-Two settings worth copying from the built-in type: turn **maturity off** (rubric
+Also: turn **maturity off** (rubric
 checks against security issues aren't meaningful), and render `description` and
 `remediation` as markdown widgets on the **Summary** tab, hidden from the
 property list. See [UI
@@ -143,11 +128,6 @@ extractors:
     method: POST
     # ... leave the rest of the downloaded file as-is
 ```
-
-Leave everything else alone: the rest of the file is the GraphQL query,
-cursor-based pagination via `next_cursor`, and a `rate_limit` handler for Wiz's
-429s. Don't drop `extra_params.audience: wiz-api` either — Wiz's token endpoint
-requires it.
 
 For a field-by-field reference, see [Setting Up a Pull
 Configuration](https://docs.opslevel.com/docs/setting-up-a-pull-configuration-for-your-customizable-data-mapping).
