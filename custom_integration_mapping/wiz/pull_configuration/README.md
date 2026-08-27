@@ -1,11 +1,13 @@
-# Wiz custom integration setup: Pull cloud security issues from Wiz into your software catalog
+# Pull Wiz issues into your OpsLevel catalog
 
-This README walks through building a **pull**-based custom integration that
-imports Wiz **Issues** into your OpsLevel catalog as components — the same thing
-OpsLevel's [built-in Wiz integration](https://docs.opslevel.com/docs/wiz) does,
-but assembled by hand out of the definitions the product publishes.
+A **pull**-based custom integration that imports Wiz **Issues** as components —
+the same thing OpsLevel's [built-in Wiz
+integration](https://docs.opslevel.com/docs/wiz-integration) does, assembled by
+hand out of the definitions the product publishes. OpsLevel polls the Wiz
+GraphQL API on a schedule; it's all YAML, with no code to run or host. For a
+push-based alternative against the same API, see [`../issues/`](../issues/).
 
-## Do you actually need this?
+## Do you need this?
 
 Probably not. If your Wiz tenant authenticates against Wiz's commercial endpoint
 (`https://auth.app.wiz.io/oauth/token`), install the built-in integration
@@ -22,20 +24,6 @@ integration can't reach:
 | Wiz on AWS GovCloud | `https://auth.gov.wiz.io/oauth/token` |
 | Older tenants still on Wiz's Auth0 endpoint | `https://auth.wiz.io/oauth/token` |
 
-## Overview of Custom Integrations
-
-OpsLevel's custom integration system supports two patterns:
-
-*   **Push Integrations**: Where external systems send data directly to OpsLevel via webhooks. See [`../issues/`](../issues/) for a script-driven push example against the same Wiz API.
-*   **Pull Integrations**: Where OpsLevel actively pulls data from an external API, as demonstrated here.
-
-The process involves a two-stage approach:
-
-1.  **Extract**: Defines how to retrieve your data, including HTTP polling settings, authentication, and data extraction rules.
-2.  **Transform**: Defines how to map the extracted data to your OpsLevel catalog properties, create component types, and establish relationships between different objects.
-
-Both stages are configured in YAML, requiring no coding and allowing for configuration-driven integrations.
-
 ## Start from the published definitions
 
 OpsLevel publishes the extract and transform definitions its own Wiz integration
@@ -46,16 +34,15 @@ curl -O https://app.opslevel.com/integration_templates/wiz/default_extract_defin
 curl -O https://app.opslevel.com/integration_templates/wiz/default_transform_definition.yml
 ```
 
-No authentication needed. These are the live files the product loads at boot, so
-they can't drift from what the integration actually does — which is why this
-guide links them instead of keeping a copy here.
-
 *   **`default_extract_definition.yml`** — the OAuth client-credentials block, and a paginated GraphQL query against Wiz's `issuesV2` API that pulls every `OPEN` and `IN_PROGRESS` issue, excluding `INFORMATIONAL` severity.
 *   **`default_transform_definition.yml`** — the mapping from a Wiz issue onto a component's name, aliases, tags and properties.
 
-## Setup Instructions
+These are the live files the product loads at boot, so they can't drift from what
+the built-in integration does — which is why this guide links them instead of
+keeping a copy here. What they don't carry is the component type, the secrets
+and the relationship rule; those are the steps below.
 
-### Step 1: Create a Wiz service account
+## Step 1: Create a Wiz service account
 
 1.  In Wiz, go to **Settings → Access Management → Service Accounts**, and click **Add Service Account**.
 2.  Set **Type** to **Custom Integration (GraphQL API)**.
@@ -68,23 +55,20 @@ You also need your tenant's **API Endpoint URL**: profile icon → **Tenant Info
 → **API Endpoint URL**. It looks like `https://api.us1.app.wiz.io/graphql`. Make
 sure the URL you use ends in `/graphql` — some Wiz screens show it without.
 
-### Step 2: Create Secrets in OpsLevel for Wiz authentication
+## Step 2: Store the credentials as OpsLevel secrets
 
-Go to **Settings → Secrets** and create two secrets:
+Go to **Settings → Secrets** and create two secrets: **`wiz_client_id`** and
+**`wiz_client_secret`**.
 
-*   **`wiz_client_id`** — your service account's client ID.
-*   **`wiz_client_secret`** — your service account's client secret.
+## Step 3: Create the component type for Wiz issues
 
-### Step 3: Create the component type for Wiz issues
-
-The built-in integration ships a **Wiz Issue** component type. That one isn't
+The built-in integration ships a **Wiz Issue** component type, which isn't
 published, so create your own: **Components → Manage Types → + New Component
-Type**.
+Type**. Give it the identifier **`wiz_issue`** so the transform definition's
+`opslevel_kind` works unchanged.
 
-Give it the identifier **`wiz_issue`** and the transform definition's
-`opslevel_kind` works unchanged. Then add a property definition for each row
-below — or just the subset you care about, and delete the rest from the
-transform definition's `properties` block.
+Then add a property definition for each row below — or just the subset you care
+about, deleting the rest from the transform definition's `properties` block.
 
 | Property | Display Name | Schema | Description |
 | :------- | :----------- | :----- | :---------- |
@@ -114,38 +98,38 @@ transform definition's `properties` block.
 | `status_changed_at` | Status Changed At | string (date-time) | The date and time the status of the issue last changed |
 | `wiz_id` | Wiz Issue Id | string | The Wiz identifier for this issue |
 | `wiz_projects` | Wiz Projects | array of object | The Wiz projects the issue belongs to |
-A couple of settings worth copying from the built-in type:
 
-*   Turn **maturity off** for the type — rubric checks against security issues aren't meaningful.
-*   Render `description` and `remediation` as markdown widgets on the **Summary** tab, and hide them from the property list. See [UI Customization](https://docs.opslevel.com/docs/ui-customization).
+Two settings worth copying from the built-in type: turn **maturity off** (rubric
+checks against security issues aren't meaningful), and render `description` and
+`remediation` as markdown widgets on the **Summary** tab, hidden from the
+property list. See [UI
+Customization](https://docs.opslevel.com/docs/ui-customization).
 
-### Step 4: Create the Custom Integration
+## Step 4: Create the custom integration
 
-1.  In OpsLevel, go to **Integrations**.
-2.  Select the **Custom** integration option.
-3.  Name it something like `Wiz Issues`.
+In OpsLevel, go to **Integrations → + New Integration**, pick **Custom**, and
+name it something like `Wiz Issues`.
 
-### Step 5: Configure the Extract Definition
+## Step 5: Configure the extract definition
 
 Paste `default_extract_definition.yml` into the **Extract and Transform
 Configuration** section of your integration, then make three edits.
 
-**Point `oauth.token_url` at your tenant's authentication endpoint** (see the
-table at the top of this README), and **swap the credential placeholders for
-your secrets**:
+Point `oauth.token_url` at your tenant's authentication endpoint (see the table
+above), and swap the credential placeholders for your secrets:
 
 ```yaml
 ---
 oauth:
   grant_type: client_credentials
-  token_url: https://auth.app.wiz.us/oauth/token   # <- your tenant's endpoint
-  client_id: "{{ 'wiz_client_id' | secret }}"      # <- was REPLACE_WITH_CLIENT_ID
+  token_url: https://auth.app.wiz.us/oauth/token       # <- was https://auth.app.wiz.io/oauth/token
+  client_id: "{{ 'wiz_client_id' | secret }}"          # <- was REPLACE_WITH_CLIENT_ID
   client_secret: "{{ 'wiz_client_secret' | secret }}"  # <- was REPLACE_WITH_CLIENT_SECRET
   extra_params:
     audience: wiz-api
 ```
 
-**Replace `REPLACE_WITH_BASE_URL`** in `http_polling.url` with your tenant's API
+Then replace `REPLACE_WITH_BASE_URL` in `http_polling.url` with your tenant's API
 endpoint URL:
 
 ```yaml
@@ -160,53 +144,51 @@ extractors:
     # ... leave the rest of the downloaded file as-is
 ```
 
-Leave everything else alone. The rest of the file is the GraphQL query, the
+Leave everything else alone: the rest of the file is the GraphQL query,
 cursor-based pagination via `next_cursor`, and a `rate_limit` handler for Wiz's
-429s.
+429s. Don't drop `extra_params.audience: wiz-api` either — Wiz's token endpoint
+requires it.
 
-*   **`external_kind`**: The identifier the transform definition matches on. Keep it `wiz_issue`.
-*   **`external_id: ".id"`**: The Wiz issue ID, which makes each component stable across syncs.
-*   **`iterator`**: A JQ expression selecting the array of issues out of the GraphQL response.
-*   **`exclude`**: A JQ predicate dropping `INFORMATIONAL` issues before they reach the transform.
-*   **`extra_params.audience: wiz-api`**: Required by Wiz's token endpoint. Don't remove it.
+For a field-by-field reference, see [Setting Up a Pull
+Configuration](https://docs.opslevel.com/docs/setting-up-a-pull-configuration-for-your-customizable-data-mapping).
 
-For a field-by-field reference, see [Setting Up a Pull Configuration](https://docs.opslevel.com/docs/setting-up-a-pull-configuration-for-your-customizable-data-mapping) and [Authenticating with OAuth](https://docs.opslevel.com/docs/setting-up-a-pull-configuration-for-your-customizable-data-mapping#oauth).
-
-### Step 6: Configure the Transformation Definition
+## Step 6: Configure the transform definition
 
 Paste `default_transform_definition.yml` in as-is. If you gave your component
 type an identifier other than `wiz_issue` in Step 3, change `opslevel_kind` to
 match, and delete any `properties` entries you didn't create a definition for.
 
-The parts worth understanding before you customize it:
+Two parts to know before you customize it:
 
-*   **`opslevel_identifier: '"wiz:" + .id'`** and the matching **`aliases`** entry: every issue gets a `wiz:<issue id>` alias, so re-syncs update the same component instead of creating duplicates.
-*   **`on_component_not_found: create`**: issues are created as components automatically. Switch to `suggest` to route them through **Catalog → Detected Components** for review instead.
-*   **`default_properties.name`**: names each component after the rule that raised the issue and the resource it was raised on — for example `Publicly exposed storage bucket on prod-assets`.
-*   **`default_properties.tags`**: sets `source`, `wiz_severity`, `wiz_status` and `wiz_issue_type` so you can filter and group issues anywhere OpsLevel supports tag filters — plus `cloud.service`, which is what links an issue back to a service (see Step 7).
+*   **`opslevel_identifier: '"wiz:" + .id'`** and the matching **`aliases`** entry give every issue a `wiz:<issue id>` alias, so re-syncs update the same component instead of creating duplicates.
+*   **`on_component_not_found: create`** creates issues as components automatically. Switch to `suggest` to route them through **Catalog → Detected Components** for review instead.
 
-### Step 7: Link issues back to the services that own the affected resources
+## Step 7: Link issues back to the services that own the affected resources
 
 The transform definition puts the affected cloud resource's identifier on each
 issue as a `cloud.service` tag. Turning that tag into a real relationship is a
 rule on your component type, not something the transform definition can do.
 
-On your `wiz_issue` component type, add a relationship definition — call it
-**Affected Component**, allowed type `service` — with a management rule matching
-the issue's `cloud.service` tag against a service **alias**. See [Relationship
+On your `wiz_issue` component type, add a relationship definition — identifier
+`affected_component`, name **Affected Component**, allowed type `service` — with
+a management rule matching the issue's `cloud.service` tag against a service
+**alias**. See [Relationship
 Definitions](https://docs.opslevel.com/docs/relationship-definitions).
 
 For the links to land, add the cloud resource identifier as an alias on the
 service that owns it. Issues whose resource identifier matches no service alias
 still import — they just aren't attached to a service yet.
 
-### Step 8: Test and sync
+## Step 8: Test and sync
 
-1.  **Run Test**: Use the **Run Test** feature in the custom integration interface. It executes the real call to Wiz, returns the payload, and shows how it maps to properties and components — do this before you save.
-2.  **Save Configuration**: Save both definitions.
-3.  **Check your catalog**: Once the sync completes, your Wiz issues appear as components of your new type.
-    *   **Managed Properties**: Properties written by the integration are **locked** in the UI and API — updates have to come from the integration.
-    *   **Removal**: Polled objects are deleted once a sync stops returning them, which is what makes resolved Wiz issues drop out of your catalog. Don't add `expires_after_days` to a polling extractor — OpsLevel rejects the combination, precisely because it's redundant here.
+Use **Run Test** before you save: it makes the real call to Wiz and shows how the
+payload maps to properties and components. Then save both definitions, and your
+Wiz issues appear as components once the sync completes.
+
+Two things to expect afterwards:
+
+*   Properties written by the integration are **locked** in the UI and API — updates have to come from the integration.
+*   Polled objects are deleted once a sync stops returning them, which is what makes resolved Wiz issues drop out of your catalog. Don't add `expires_after_days` to a polling extractor — OpsLevel rejects the combination, precisely because it's redundant here.
 
 ## Troubleshooting
 
