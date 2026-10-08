@@ -6,7 +6,7 @@ This script permanently deletes deactivated users from your OpsLevel account. Us
 
 ## Requirements:
 
-* Python 3.8 or later
+* Python 3.11
 * `requests` library is installed
 * An API token belonging to an admin user
 
@@ -30,16 +30,26 @@ To keep specific users, exclude them by email. Repeat `--exclude` for each user:
 python ./delete_deactivated_users.py --exclude jane@example.com --exclude sam@example.com
 ```
 
+If an `--exclude` email does not match any user in the account, for example because of a typo, the script stops without deleting anything.
+
 Once you have reviewed the list, run the script with `--apply`. It will prompt you to type `delete` to confirm you want to delete all users on the list:
 
 ```
 python ./delete_deactivated_users.py --apply
 ```
 
-To run the script without the confirmation prompt, for example from a scheduler, add `--yes`:
+When the script runs automatically, for example from cron or a CI pipeline, there is no one to answer the prompt, so the script stops without deleting anything. Add `--yes` to skip the prompt:
 
 ```
 python ./delete_deactivated_users.py --apply --yes
 ```
 
-If a user fails to delete, the script logs the error and continues with the remaining users. It exits with code `1` if any deletion failed.
+If OpsLevel rate limits the API token, the script waits for the time OpsLevel asks for and retries, so large accounts may take several minutes. If a user fails to delete, the script logs the error and continues with the remaining users.
+
+### Exit codes
+
+| Code | Meaning |
+| --- | --- |
+| `0` | Success, including dry runs and runs with nothing to delete |
+| `1` | One or more users failed to delete |
+| `2` | Nothing was deleted because of a setup problem, for example a missing token, an unmatched `--exclude` email, a missing `--yes`, or confirmation not given |
