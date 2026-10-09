@@ -12,14 +12,18 @@ OPSLEVEL_ENDPOINT = os.environ.get(
 
 MAX_RETRIES = 5
 DEFAULT_RETRY_AFTER_SECONDS = 60
+MAX_RETRY_AFTER_SECONDS = 300
 
 EXIT_DELETE_FAILED = 1
 EXIT_NOTHING_DELETED = 2
 
-LIST_USERS_QUERY = """
-    query users($endCursor: String) {
+LIST_DEACTIVATED_USERS_QUERY = """
+    query deactivatedUsers($endCursor: String) {
       account {
-        users(first: 500, after: $endCursor) {
+        users(
+          after: $endCursor
+          filter: [{ key: deactivated_at, type: does_not_equal }]
+        ) {
           nodes {
             id
             name
@@ -29,6 +33,18 @@ LIST_USERS_QUERY = """
           pageInfo {
             endCursor
             hasNextPage
+          }
+        }
+      }
+    }
+"""
+
+FIND_USER_BY_EMAIL_QUERY = """
+    query userByEmail($email: String!) {
+      account {
+        users(filter: [{ key: email, type: equals, arg: $email }]) {
+          nodes {
+            email
           }
         }
       }
@@ -69,8 +85,11 @@ def opslevel_graphql_query(query, variables=None):
         )
         if response.status_code != 429 or attempt == MAX_RETRIES:
             break
-        retry_after = response.headers.get("Retry-After", DEFAULT_RETRY_AFTER_SECONDS)
-        wait_seconds = max(int(retry_after), 1)
+        try:
+            wait_seconds = int(response.headers["Retry-After"])
+        except (KeyError, ValueError):
+            wait_seconds = DEFAULT_RETRY_AFTER_SECONDS
+        wait_seconds = min(max(wait_seconds, 1), MAX_RETRY_AFTER_SECONDS)
         print(f"Rate limited by OpsLevel, retrying in {wait_seconds}s", file=sys.stderr)
         time.sleep(wait_seconds)
 
@@ -82,16 +101,16 @@ def opslevel_graphql_query(query, variables=None):
     return result
 
 
-def fetch_users():
+def fetch_deactivated_users():
     """
-    Fetches all users in the account, active and deactivated.
+    Fetches all deactivated users from OpsLevel.
     """
     cursor = None
     has_next_page = True
     users = []
     while has_next_page:
         response = opslevel_graphql_query(
-            LIST_USERS_QUERY, variables={"endCursor": cursor}
+            LIST_DEACTIVATED_USERS_QUERY, variables={"endCursor": cursor}
         )
         nodes = response["data"]["account"]["users"]["nodes"]
         users.extend(nodes)
@@ -102,13 +121,19 @@ def fetch_users():
     return users
 
 
-def check_excluded_emails_exist(users, excluded_emails):
+def check_excluded_emails_exist(excluded_emails):
     """
-    Aborts if an --exclude email matches no user, since a typo would otherwise
-    silently let that user be deleted.
+    Aborts if an --exclude email matches no user, active or deactivated, since a
+    typo would otherwise silently let that user be deleted.
     """
-    known_emails = {user["email"].lower() for user in users}
-    unknown_emails = sorted(excluded_emails - known_emails)
+    unknown_emails = []
+    for email in sorted(excluded_emails):
+        response = opslevel_graphql_query(
+            FIND_USER_BY_EMAIL_QUERY, variables={"email": email}
+        )
+        if not response["data"]["account"]["users"]["nodes"]:
+            unknown_emails.append(email)
+
     if unknown_emails:
         fail(
             "These --exclude emails do not match any user in the account: "
@@ -192,15 +217,14 @@ def main():
     excluded_emails = {email.strip().lower() for email in args.exclude}
 
     try:
-        users = fetch_users()
+        check_excluded_emails_exist(excluded_emails)
+        users = fetch_deactivated_users()
     except Exception as e:
         fail(f"Could not fetch users: {e}")
 
-    check_excluded_emails_exist(users, excluded_emails)
-    deactivated_users = [user for user in users if user["deactivatedAt"]]
-    to_delete = select_users_to_delete(deactivated_users, excluded_emails)
+    to_delete = select_users_to_delete(users, excluded_emails)
     print(
-        f"Found {len(deactivated_users)} deactivated user(s), "
+        f"Found {len(users)} deactivated user(s), "
         f"{len(to_delete)} eligible for deletion"
     )
     if not to_delete:
