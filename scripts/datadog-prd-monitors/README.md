@@ -69,18 +69,18 @@ Once you've reviewed the list, run the script with `--apply` to make the changes
 python ./sync_datadog_prd_monitors.py --apply
 ```
 
-If a link fails, for example because no component has the alias in the monitor's `service:` tag, the script logs the error and continues with the rest.
+If a change fails, for example because no component has the alias in the monitor's `service:` tag, the script logs the error and continues with the rest. The script doesn't retry, so if OpsLevel rate limits the API token on a large account, some changes are reported as failed. Run the same command again to finish them.
 
 ### First run: `--reset`
 
-Monitors that OpsLevel attached before you changed the tag key stay attached, including monitors with no `env` tag. To start from a clean slate, run the script once with `--reset`. It detaches every Datadog monitor from every component, then attaches only the `env:prd` monitors again:
+Monitors that OpsLevel attached before you changed the tag key stay attached, including monitors with no `env` tag. To start from a clean slate, run the script once with `--reset`. It removes every link except an `env:prd` monitor's link to a component named in its own `service:` tags, then adds any of those links that are missing. Correct links are left in place, so they aren't removed and added back:
 
 ```bash
 python ./sync_datadog_prd_monitors.py --reset
 python ./sync_datadog_prd_monitors.py --reset --apply
 ```
 
-`--reset` also detaches monitors that someone attached by hand, and only attaches `env:prd` monitors again. Review the dry run before applying it.
+`--reset` also detaches monitors that someone attached by hand, unless the monitor is tagged `env:prd` and attached to a component in its own `service:` tags. Review the dry run before applying it.
 
 ### Keep it running
 
@@ -102,7 +102,7 @@ If your monitors name the component with a tag key other than `service`, pass it
 python ./sync_datadog_prd_monitors.py --service-key app
 ```
 
-Tag values are matched exactly, so `env:PRD` doesn't match `--env prd`.
+Tag values are matched exactly, including case. `env:PRD` doesn't match `--env prd`, and `service:Shopping-Cart` isn't treated as the same component as an existing link to `shopping-cart`.
 
 ## How it works
 
@@ -112,7 +112,8 @@ Tag values are matched exactly, so `env:PRD` doesn't match `--env prd`.
 | `service:X` + `service:Y` + `env:prd` | Attaches it to both `X` and `Y` |
 | `service:X` + `env:prd` + `env:stg` | Treats it as production and attaches it to `X` |
 | `service:X` + any other env | Detaches it from every component |
-| `service:X` with no `env` tag | Leaves it as it is, except with `--reset` |
+| `service:X` with no `env` tag | Leaves it as it is, except with `--reset`, which detaches it |
+| `service:X` + `env:prd`, also attached to `Y` | Leaves the `Y` link, except with `--reset`, which detaches it from `Y` |
 | `env:prd` with no `service:` tag | Skips it |
 
 While **Set Webhooks On Monitors** is on in the Datadog integration, OpsLevel adds `@webhook-OpsLevel` to a monitor's message when the monitor is attached, and removes it when the monitor is detached from its last component. The script's changes trigger this the same way changes in the UI do.
