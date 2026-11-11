@@ -1,14 +1,20 @@
 #!/usr/bin/env python3
-"""Attach Datadog monitors to OpsLevel components only when tagged env:<ENV>.
+"""Attach Datadog monitors to OpsLevel components only when they are tagged env:prd.
 
 Links monitors tagged `service:<alias>` + `env:prd` to the component with that alias,
 and removes links from monitors tagged with any other env.
 
 Usage:
-  OPSLEVEL_API_TOKEN=... python3 sync_prd_monitors.py                    # dry run
-  OPSLEVEL_API_TOKEN=... python3 sync_prd_monitors.py --apply            # make changes
-  OPSLEVEL_API_TOKEN=... python3 sync_prd_monitors.py --reset --apply    # unlink every Datadog
-      monitor from every component first, then link only env:<ENV> monitors (one-time cleanup)
+  OPSLEVEL_API_TOKEN=... python3 sync_datadog_prd_monitors.py                  # dry run
+  OPSLEVEL_API_TOKEN=... python3 sync_datadog_prd_monitors.py --apply          # make changes
+  OPSLEVEL_API_TOKEN=... python3 sync_datadog_prd_monitors.py --reset          # dry run of the one-time cleanup
+  OPSLEVEL_API_TOKEN=... python3 sync_datadog_prd_monitors.py --reset --apply  # remove every link except
+                                                                               # env:prd monitors' own components
+
+Options:
+  --env production         keep a different env linked (default: prd)
+  --service-key app        read the component from a different tag key (default: service)
+  OPSLEVEL_ENDPOINT=...    use a different OpsLevel API URL (default: https://app.opslevel.com/graphql)
 """
 import os
 import re
@@ -93,8 +99,10 @@ def list_datadog_alert_sources():
 def monitor_tags(source, service_key):
     """
     Returns (envs, service aliases) read from the monitor's `env:` and `<service_key>:` tags.
-    Matches quoted tag strings so it works whatever format the metadata string is in.
     """
+    # The API returns metadata as a string whose format isn't guaranteed to be JSON, so this
+    # picks out quoted "env:..." and "<service_key>:..." strings rather than parsing it. Any other
+    # quoted metadata value starting with one of those prefixes would also match.
     pattern = re.compile(r'"((?:%s|env):[^"]+)"' % re.escape(service_key))
     tags = pattern.findall(source["metadata"] or "")
     envs = {tag.split(":", 1)[1] for tag in tags if tag.startswith("env:")}
@@ -112,14 +120,16 @@ def plan_changes(sources, env, service_key, reset):
     Returns the links to remove and the links to add, as lists of dicts.
     - Monitors tagged `env:<env>` are linked to the component in each `<service_key>:` tag.
     - Monitors tagged with any other env are unlinked.
-    - Monitors with no env tag are left alone, unless `reset` unlinks every monitor first.
+    - Monitors with no env tag are left alone, unless `reset` is set.
+    - With `reset`, every link is removed except an `env:<env>` monitor's link to a component
+      named in its own tags, so correct links are never removed and added back.
     """
     unlinks = []
     links = []
     for source in sources:
         envs, aliases = monitor_tags(source, service_key)
+        wanted_aliases = aliases if env in envs else set()
         current_links = source["alertSourceServices"]["nodes"]
-        linked_aliases = {alias for link in current_links for alias in link["service"]["aliases"]}
 
         if reset:
             reason = "reset"
@@ -129,15 +139,19 @@ def plan_changes(sources, env, service_key, reset):
             reason = None
 
         if reason:
+            kept_links = []
             for link in current_links:
-                unlinks.append(
-                    {"id": link["id"], "monitor": source["name"], "component": component_label(link), "reason": reason}
-                )
-            linked_aliases = set()
+                if wanted_aliases & set(link["service"]["aliases"]):
+                    kept_links.append(link)
+                else:
+                    unlinks.append(
+                        {"id": link["id"], "monitor": source["name"], "component": component_label(link), "reason": reason}
+                    )
+            current_links = kept_links
 
-        if env in envs:
-            for alias in sorted(aliases - linked_aliases):
-                links.append({"alertSourceId": source["id"], "monitor": source["name"], "component": alias})
+        linked_aliases = {alias for link in current_links for alias in link["service"]["aliases"]}
+        for alias in sorted(wanted_aliases - linked_aliases):
+            links.append({"alertSourceId": source["id"], "monitor": source["name"], "component": alias})
     return unlinks, links
 
 
@@ -161,7 +175,8 @@ def parse_args():
     parser.add_argument(
         "--reset",
         action="store_true",
-        help="unlink every Datadog monitor from every component first (one-time cleanup)",
+        help="also remove links from monitors with no env tag and links to components not in a monitor's "
+        "own tags (one-time cleanup)",
     )
     parser.add_argument("--env", default="prd", help="env tag value to keep linked (default: prd)")
     parser.add_argument(
@@ -222,6 +237,7 @@ def main():
     total = len(unlinks) + len(links)
     print(f"Done: {total - failed} changed, {failed} failed")
     if failed:
+        print("Re-run the same command to retry the failed changes.", file=sys.stderr)
         sys.exit(1)
 
 
