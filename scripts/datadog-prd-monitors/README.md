@@ -2,7 +2,7 @@
 
 OpsLevel attaches a Datadog monitor to a component when the monitor has a tag such as `service:shopping-cart` and `shopping-cart` is one of the component's aliases. It only looks at that one tag key, so a staging monitor tagged `service:shopping-cart` and `env:stg` is attached to the same component as the production monitor tagged `service:shopping-cart` and `env:prd`. Disconnecting the staging monitor in the UI doesn't last, because the next sync attaches it again.
 
-Leaving `@webhook-OpsLevel` out of the staging monitor's message doesn't help either. While **Set Webhooks On Monitors** is on, OpsLevel adds the webhook to every monitor it attaches.
+Leaving OpsLevel's webhook (`@webhook-OpsLevel` by default) out of the staging monitor's message doesn't help either. While **Set Webhooks On Monitors** is on, OpsLevel adds the webhook to every monitor it attaches.
 
 This script attaches monitors based on two tags instead of one, for example `service:shopping-cart` **and** `env:prd`, or you can modify it to fit your needs.
 
@@ -10,13 +10,14 @@ For every Datadog monitor in OpsLevel, it:
 
 - attaches monitors tagged `env:prd` to the component named in each `service:` tag
 - detaches monitors tagged with any other env, such as `env:stg`
-- leaves monitors with no `env` tag alone
+- leaves monitors with no `env` tag alone, unless you use `--reset`
 
 It never touches:
 
 - alert sources from other integrations, such as PagerDuty or Opsgenie
-- monitors tagged `env:prd` that have no `service:` tag, because there's no component to attach them to
 - the monitors themselves in Datadog (OpsLevel may still add or remove its webhook, see [How it works](#how-it-works))
+
+It never attaches monitors tagged `env:prd` that have no `service:` tag, because there's no component to attach them to.
 
 Detaching a monitor can't be undone automatically, but you can attach it again by hand at any time with **Connect Alert Source** on the component's **Operations** tab.
 
@@ -84,7 +85,13 @@ python ./sync_datadog_prd_monitors.py --reset --apply
 
 ### Keep it running
 
-With automatic matching turned off, new production monitors aren't attached until the script runs again. Run `python ./sync_datadog_prd_monitors.py --apply` on a schedule, for example hourly from cron or a CI job. It only changes what's out of date, so it's safe to run as often as you like.
+With automatic matching turned off, new production monitors aren't attached until the script runs again. Run the script on a schedule, for example hourly from cron or a CI job, **without** `--reset`:
+
+```bash
+python ./sync_datadog_prd_monitors.py --apply
+```
+
+It only changes what's out of date, so it's safe to run as often as you like. Don't schedule `--reset`: it would also detach any monitor someone attaches by hand.
 
 OpsLevel syncs Datadog monitors about once an hour. To pick up new monitors sooner, click **Update Monitors** on the Datadog integration page (at most once an hour), wait a few minutes, then run the script.
 
@@ -114,9 +121,9 @@ Tag values are matched exactly, including case. `env:PRD` doesn't match `--env p
 | `service:X` + any other env | Detaches it from every component |
 | `service:X` with no `env` tag | Leaves it as it is, except with `--reset`, which detaches it |
 | `service:X` + `env:prd`, also attached to `Y` | Leaves the `Y` link, except with `--reset`, which detaches it from `Y` |
-| `env:prd` with no `service:` tag | Skips it |
+| `env:prd` with no `service:` tag | Never attaches it; with `--reset`, detaches it from anything it's attached to |
 
-While **Set Webhooks On Monitors** is on in the Datadog integration, OpsLevel adds `@webhook-OpsLevel` to a monitor's message when the monitor is attached, and removes it when the monitor is detached from its last component. The script's changes trigger this the same way changes in the UI do.
+While **Set Webhooks On Monitors** is on in the Datadog integration, OpsLevel adds its webhook to a monitor's message when the monitor is attached, and removes it when the monitor is detached from its last component. The webhook is the integration's **Datadog Notification Channel**, `@webhook-OpsLevel` by default. The script's changes trigger this the same way changes in the UI do.
 
 ## Exit codes
 
@@ -124,3 +131,4 @@ While **Set Webhooks On Monitors** is on in the Datadog integration, OpsLevel ad
 |---|---|
 | 0 | Success, including dry runs and runs with nothing to change |
 | 1 | One or more links failed to change, or nothing was changed because of a setup problem, for example a missing token or a failed API request while listing monitors |
+| 2 | Nothing was changed because of an invalid argument, for example an unknown flag or `--env` without a value |
