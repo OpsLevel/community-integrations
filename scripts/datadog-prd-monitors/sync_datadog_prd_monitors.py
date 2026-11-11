@@ -5,10 +5,10 @@ Links monitors tagged `service:<alias>` + `env:prd` to the component with that a
 and removes links from monitors tagged with any other env.
 
 Usage:
-  OPSLEVEL_API_TOKEN=... python3 sync_datadog_prd_monitors.py                  # dry run
-  OPSLEVEL_API_TOKEN=... python3 sync_datadog_prd_monitors.py --apply          # make changes
-  OPSLEVEL_API_TOKEN=... python3 sync_datadog_prd_monitors.py --reset          # dry run of the one-time cleanup
-  OPSLEVEL_API_TOKEN=... python3 sync_datadog_prd_monitors.py --reset --apply  # remove every link except
+  OPSLEVEL_API_TOKEN=... python sync_datadog_prd_monitors.py                  # dry run
+  OPSLEVEL_API_TOKEN=... python sync_datadog_prd_monitors.py --apply          # make changes
+  OPSLEVEL_API_TOKEN=... python sync_datadog_prd_monitors.py --reset          # dry run of the one-time cleanup
+  OPSLEVEL_API_TOKEN=... python sync_datadog_prd_monitors.py --reset --apply  # remove every link except
                                                                                # env:prd monitors' own components
 
 Options:
