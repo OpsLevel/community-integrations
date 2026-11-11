@@ -9,7 +9,7 @@ Usage:
   OPSLEVEL_API_TOKEN=... python sync_datadog_prd_monitors.py --apply          # make changes
   OPSLEVEL_API_TOKEN=... python sync_datadog_prd_monitors.py --reset          # dry run of the one-time cleanup
   OPSLEVEL_API_TOKEN=... python sync_datadog_prd_monitors.py --reset --apply  # remove every link except
-                                                                               # env:prd monitors' own components
+                                                                              # env:prd monitors' own components
 
 Options:
   --env production         keep a different env linked (default: prd)
