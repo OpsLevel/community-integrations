@@ -4,9 +4,6 @@ Catalogs every repository in a GitHub organization as a **GitHub Repository** co
 risk-based standards. OpsLevel doesn't run maturity checks on the repository object itself, so a component per
 repository makes that possible.
 
-This is the Terraform version of the [step-by-step guide](../../step_by_step_setup.md): same component type,
-integration, risk tags, filters and scorecard.
-
 ## What it creates
 
 | Resource | Details |
@@ -16,7 +13,7 @@ integration, risk tags, filters and scorecard.
 | Secret `github_api_token` | The GitHub token the integration uses (`manage_secrets = false` to reuse an existing one) |
 | Risk tags | `data_classification`, `external_interface_type` and `risk_priority` on each GitHub Repository component, from `repo_classifications` |
 | Filters | **GitHub Repositories (active)** (not archived), **GitHub Repositories - risk_priority P1 or P2** (tag) and **GitHub Repositories - High risk (P1/P2)** (both) |
-| Scorecard **(Use Case) Security - GitHub Repository Risk** | 7 checks: 4 Tag Defined checks on the risk tags, 3 Custom Property checks ([main guide](../../step_by_step_setup.md#part-6-scorecard)) |
+| Scorecard **(Use Case) Security - GitHub Repository Risk** | 7 checks: 4 Tag Defined checks on the risk tags, 3 Custom Property checks (below) |
 
 Properties (all set by the integration, locked in the UI): GitHub ID, Repository Name, Repository Description,
 Visibility, archived, empty, Creation Date, Updated Date (last push), Age (in months), GitHub Topics.
@@ -66,8 +63,18 @@ digits, `-` and `_`, check the component's aliases in OpsLevel after the first s
 
 ## Scorecard checks
 
-Same 7 checks as the step-by-step guide: see [Scorecard](../../step_by_step_setup.md#part-6-scorecard).
-Checks written for Diamond go on Gold when `rubric_level_count = 3` (the default).
+| Level | Check | Applies to |
+|---|---|---|
+| 1 Bronze | Data classification tag is set | all in scope |
+| 1 Bronze | External interface type tag is set | all in scope |
+| 2 Silver | Repository has a description | all in scope |
+| 2 Silver | Not a P1 risk (`risk_priority` tag) | all in scope |
+| 3 Gold | Repository is not public | P1/P2 only |
+| 4 Diamond* | Pushed to in the last 90 days | P1/P2 only |
+| 4 Diamond* | Risk priority P3 or lower (`risk_priority` tag) | all in scope |
+
+\* On Gold when `rubric_level_count = 3` (the default). Checks limited to P1/P2 don't apply to lower-risk repos,
+so those aren't held back by them.
 
 ## Prerequisites
 
