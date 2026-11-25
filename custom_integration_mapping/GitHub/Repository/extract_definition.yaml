@@ -1,0 +1,19 @@
+---
+# Pull every repository in your GitHub org. Replace <your_github_org> with your org's login.
+# Reads the first page only (100 repos); see the README "Limits".
+# Secret github_api_token: fine-grained PAT, your org as resource owner, All repositories,
+# Repository permission "Metadata: Read" (covers private repos and custom_properties).
+extractors:
+- external_kind: github_repos
+  external_id: ".id | tostring"
+  iterator: "."
+  http_polling:
+    method: GET
+    url: 'https://api.github.com/orgs/<your_github_org>/repos?per_page=100&type=all&page={{ cursor | default: ''1'' }}'
+    headers:
+    - name: Authorization
+      value: Bearer {{ 'github_api_token' | secret }}
+    - name: Accept
+      value: application/vnd.github+json
+    - name: X-GitHub-Api-Version
+      value: '2022-11-28'

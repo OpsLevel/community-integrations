@@ -1,0 +1,49 @@
+# Terraform: GitHub repository metadata in OpsLevel
+
+Two Terraform (or OpenTofu) packages that set up everything in the [main guide](../README.md) in one `apply`:
+component type or properties, the custom integration, the GitHub token secret, filters, and the risk scorecard.
+Both pull the same GitHub data and compute the same Risk Priority; they differ in where the data lands.
+
+| Package | What it does |
+|---|---|
+| [`github_repository_component/`](github_repository_component/) (recommended) | One **GitHub Repository** component per repo. Same setup as the main guide. |
+| [`github_service_properties/`](github_service_properties/) | `github_*` custom properties on your existing **Services**. No new components. |
+
+Pick one. Both create a secret with the same alias (`github_api_token`), so to switch, `terraform destroy` the first
+one before applying the other (or give one of them a different `github_token_secret_alias`).
+
+## Choosing a package
+
+| | **GitHub Repository component** | **GitHub properties on Service** |
+|---|---|---|
+| Where the data lives | A new component type, one component per repository (`GitHub Repo - <name>`) | Custom properties on your existing Services |
+| Repos without a service | Cataloged and graded | Skipped |
+| Services with several repos / monorepos | Each repo graded on its own | One repo's values per service (the last one synced) |
+| Linking repo ↔ service | Manual **Component** relationship on each repo component | Automatic by name, or the repo's `opslevel_service` GitHub custom property |
+| Who sees the scorecard | Repo components (owned through the Component link) | The owning team, on the service they already own |
+| Catalog growth | One component per repository | None |
+
+## Deploy
+
+```bash
+cd github_repository_component/example      # or github_service_properties/example
+cp terraform.tfvars.example terraform.tfvars  # GitHub org, owner team alias, GitHub token
+export OPSLEVEL_API_TOKEN=...                 # OpsLevel API token with write access
+# export OPSLEVEL_API_URL=https://<subdomain>.opslevel.com   # only if your account isn't on app.opslevel.com
+terraform init && terraform plan && terraform apply
+```
+
+Then open the new custom integration in OpsLevel and click **Sync**.
+
+Requirements: Terraform / OpenTofu ≥ 1.5, OpsLevel provider ≥ 1.14, a team for `owner_team_alias`, and rubric levels
+with index 1–3 (set `rubric_level_count = 4` if your rubric also has a Diamond level). If the secret already exists
+in your account, set `manage_secrets = false`. `terraform.tfvars` holds your GitHub token: keep it out of version
+control (each package's `.gitignore` already excludes it).
+
+## Known issues
+
+- OpsLevel provider v1.14.x fails to create a component type property whose `description` is `""` ("Provider
+  produced inconsistent result after apply"). Every property in these packages has a description; keep it that way
+  if you add more.
+- Filters reference component-type properties by alias in `key_data` (option A) and by property definition id
+  (option B).

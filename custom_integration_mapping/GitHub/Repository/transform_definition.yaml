@@ -1,0 +1,25 @@
+---
+transforms:
+# One "GitHub Repository" component per repo, created on first sync.
+- external_kind: github_repos
+  opslevel_kind: github_repository
+  opslevel_identifier: '"github_repo_\(.name | ascii_downcase | gsub("[^a-z0-9_-]"; "_"))"'
+  on_component_not_found: create
+  properties:
+    name: '"GitHub Repo - \(.name)"'
+    github_id: .id
+    repository_name: .full_name
+    repository_description: .description
+    visibility: .visibility
+    archived: .archived
+    empty: .size == 0
+    creation_date: .created_at
+    updated_date: .pushed_at
+    age_in_months: '(.created_at | fromdateiso8601 | gmtime) as $c | (now | gmtime) as $n | (($n[0] - $c[0]) * 12 + ($n[1] - $c[1]) - (if $n[2] < $c[2] then 1 else 0 end))'
+    # The org repos endpoint only returns the primary language; the full list needs /repos/{repo}/languages.
+    top_languages: 'if .language then [.language] else null end'
+    github_topics: .topics // []
+    data_classification: .custom_properties.data_classification // null
+    external_interface_type: .custom_properties.external_interface_type // null
+    # P1 = confidential/restricted data behind a public interface; see README "Risk Priority".
+    risk_priority: 'if .archived then "P4" else (.custom_properties.data_classification // null) as $dc | (.custom_properties.external_interface_type // null) as $ei | if $dc == null or $ei == null then null else ($dc | IN("confidential", "restricted")) as $sens | ($ei | IN("public_api", "public_web")) as $exp | (if $sens and $exp then 1 elif $sens or ($dc == "internal" and $exp) then 2 elif $dc == "internal" or $exp then 3 else 4 end) as $p | "P\(if .visibility == "public" and $dc != "public" and $p > 1 then $p - 1 else $p end)" end end'

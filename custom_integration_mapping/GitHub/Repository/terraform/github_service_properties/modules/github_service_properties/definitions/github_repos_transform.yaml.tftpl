@@ -1,0 +1,26 @@
+---
+transforms:
+# GitHub repo metadata onto the existing Service it belongs to. Nothing is created: repos with no matching Service
+# are skipped. Match: the repo's `opslevel_service` GitHub custom property (a Service alias) if set, otherwise the
+# repo name lowercased with "-" turned into "_" (shopping-cart-service -> shopping_cart_service).
+- external_kind: github_repos
+  opslevel_kind: service
+  opslevel_identifier: '.custom_properties.opslevel_service // (.name | ascii_downcase | gsub("-"; "_"))'
+  on_component_not_found: skip
+  properties:
+    ${a.repo_id}: .id
+    ${a.full_name}: .full_name
+    ${a.description}: .description
+    ${a.visibility}: .visibility
+    ${a.archived}: .archived
+    ${a.empty}: .size == 0
+    ${a.created_at}: .created_at
+    ${a.last_pushed_at}: .pushed_at
+    ${a.age_in_months}: '(.created_at | fromdateiso8601 | gmtime) as $c | (now | gmtime) as $n | (($n[0] - $c[0]) * 12 + ($n[1] - $c[1]) - (if $n[2] < $c[2] then 1 else 0 end))'
+    # The org repos endpoint only returns the primary language; the full list needs /repos/{repo}/languages.
+    ${a.languages}: 'if .language then [.language] else null end'
+    ${a.topics}: .topics // []
+    ${a.data_classification}: .custom_properties.data_classification // null
+    ${a.external_interface_type}: .custom_properties.external_interface_type // null
+    # P1 = confidential/restricted data behind a public interface; see the README "Risk Priority".
+    ${a.risk_priority}: 'if .archived then "P4" else (.custom_properties.data_classification // null) as $dc | (.custom_properties.external_interface_type // null) as $ei | if $dc == null or $ei == null then null else ($dc | IN("confidential", "restricted")) as $sens | ($ei | IN("public_api", "public_web")) as $exp | (if $sens and $exp then 1 elif $sens or ($dc == "internal" and $exp) then 2 elif $dc == "internal" or $exp then 3 else 4 end) as $p | "P\(if .visibility == "public" and $dc != "public" and $p > 1 then $p - 1 else $p end)" end end'
