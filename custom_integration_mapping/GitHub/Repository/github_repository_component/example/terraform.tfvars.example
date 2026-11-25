@@ -1,0 +1,8 @@
+# Copy to terraform.tfvars and keep it out of version control (it can hold the GitHub token).
+github_org       = "<your GitHub org>"
+owner_team_alias = "<OpsLevel team alias>"
+
+# The integration reads the GitHub token from the OpsLevel secret github_api_token. Create it in OpsLevel
+# (Settings > Secrets), or let Terraform create it from the token below (it's then stored in the state file).
+# manage_secrets = true
+# github_token   = "github_pat_..."

@@ -1,0 +1,20 @@
+---
+transforms:
+# One "GitHub Repository" component per repo, created on first sync.
+- external_kind: github_repos
+  opslevel_kind: github_repository
+  # The GitHub repo id is unique and never changes (names can collide once normalized, and repos get renamed).
+  opslevel_identifier: '"github_repo_\(.id)"'
+  on_component_not_found: create
+  properties:
+    name: '"GitHub Repo - \(.name)"'
+    github_id: .id
+    repository_name: .full_name
+    repository_description: .description
+    visibility: .visibility
+    archived: .archived
+    empty: .size == 0
+    creation_date: .created_at
+    updated_date: .pushed_at
+    age_in_months: '(.created_at | fromdateiso8601 | gmtime) as $c | (now | gmtime) as $n | (($n[0] - $c[0]) * 12 + ($n[1] - $c[1]) - (if $n[2] < $c[2] then 1 else 0 end))'
+    github_topics: .topics // []

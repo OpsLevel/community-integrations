@@ -1,0 +1,19 @@
+# Terraform working files and state. Never commit them: state (and tfvars) can hold secrets such as API tokens and
+# your OpsLevel account's ids.
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+.terraform.tfstate.lock.info
+*.tfplan
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Variable files: keep the committed templates only.
+*.tfvars
+*.tfvars.json
+!*.tfvars.example

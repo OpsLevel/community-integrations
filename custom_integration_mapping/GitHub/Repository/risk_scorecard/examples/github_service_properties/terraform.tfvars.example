@@ -1,0 +1,15 @@
+# Copy to terraform.tfvars and keep it out of version control (it can hold the GitHub token).
+github_org       = "<your GitHub org>"
+owner_team_alias = "<OpsLevel team alias>"
+
+# The integration reads the GitHub token from the OpsLevel secret github_api_token. Create it in OpsLevel
+# (Settings > Secrets), or let Terraform create it from the token below (it's then stored in the state file).
+# manage_secrets = true
+# github_token   = "github_pat_..."
+# rubric_level_count = 3   # 4 if your rubric has a fourth level (Diamond)
+
+# Risk tags on Services, keyed by Service alias.
+# service_classifications = {
+#   "payments_api" = { data_classification = "restricted", external_interface_type = "public_api" }
+#   "docs_site"    = { data_classification = "public", external_interface_type = "public_web" }
+# }
