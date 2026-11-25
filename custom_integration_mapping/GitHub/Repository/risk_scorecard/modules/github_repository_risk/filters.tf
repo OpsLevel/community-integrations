@@ -6,7 +6,7 @@ resource "opslevel_filter" "active" {
   predicate {
     key   = "component_type_id"
     type  = "equals"
-    value = opslevel_component_type.github_repository.id
+    value = var.component_type_id
   }
   predicate {
     key      = "properties"

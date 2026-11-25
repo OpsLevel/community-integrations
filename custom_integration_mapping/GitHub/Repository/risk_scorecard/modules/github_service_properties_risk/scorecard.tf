@@ -86,7 +86,7 @@ resource "opslevel_check_service_property" "this" {
   filter              = local.check_filter[each.key]
   property            = "custom_property"
   component_type      = data.opslevel_component_type.service.id
-  property_definition = opslevel_property_definition.github[each.value.key].id
+  property_definition = var.property_definition_ids[each.value.key]
   predicate = {
     type  = each.value.predicate
     value = each.value.value

@@ -14,12 +14,12 @@ resource "opslevel_filter" "active" {
   }
   predicate {
     key      = "properties"
-    key_data = opslevel_property_definition.github["repo_id"].id
+    key_data = var.property_definition_ids["repo_id"]
     type     = "exists"
   }
   predicate {
     key      = "properties"
-    key_data = opslevel_property_definition.github["archived"].id
+    key_data = var.property_definition_ids["archived"]
     type     = "satisfies_jq_expression"
     value    = ". != true"
   }

@@ -1,4 +1,4 @@
-# Pull: GitHub org repos -> repo metadata on the matching Service. Risk tags are set in tags.tf.
+# Pull: GitHub org repos -> repo metadata on the matching Service.
 resource "opslevel_integration_custom" "github_service_properties" {
   name = var.integration_name
   etl_definition = {

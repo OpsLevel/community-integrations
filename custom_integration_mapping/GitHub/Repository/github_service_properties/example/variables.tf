@@ -4,14 +4,8 @@ variable "github_org" {
 }
 
 variable "owner_team_alias" {
-  description = "Alias of the OpsLevel team that owns the scorecard, checks and secret."
+  description = "Alias of the OpsLevel team that owns the GitHub token secret."
   type        = string
-}
-
-variable "rubric_level_count" {
-  description = "Rubric levels above Beginner in the account (3 = Bronze/Silver/Gold; 4 adds Diamond)."
-  type        = number
-  default     = 3
 }
 
 variable "manage_secrets" {
@@ -25,14 +19,4 @@ variable "github_token" {
   type        = string
   sensitive   = true
   default     = null
-}
-
-variable "service_classifications" {
-  description = "Per Service alias: data_classification, external_interface_type, optional risk_priority (set as tags)."
-  type = map(object({
-    data_classification     = string
-    external_interface_type = string
-    risk_priority           = optional(string)
-  }))
-  default = {}
 }

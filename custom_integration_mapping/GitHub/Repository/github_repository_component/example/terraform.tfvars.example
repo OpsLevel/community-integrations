@@ -1,11 +1,4 @@
 # Copy to terraform.tfvars and keep it out of version control (it holds the token).
 github_org       = "<your GitHub org>"
 owner_team_alias = "<OpsLevel team alias>"
-# rubric_level_count = 3   # 4 if your rubric has a fourth level (Diamond)
 github_token     = "github_pat_..."
-
-# Risk tags on the GitHub Repository components (apply once, Sync the integration, then apply again).
-# repo_classifications = {
-#   "payments-api" = { data_classification = "restricted", external_interface_type = "public_api" }
-#   "docs-site"    = { data_classification = "public", external_interface_type = "public_web" }
-# }
