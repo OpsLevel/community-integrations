@@ -3,7 +3,8 @@ transforms:
 # One "GitHub Repository" component per repo, created on first sync.
 - external_kind: github_repos
   opslevel_kind: github_repository
-  opslevel_identifier: '"github_repo_\(.name | ascii_downcase | gsub("[^a-z0-9_-]"; "_"))"'
+  # The GitHub repo id is unique and never changes (names can collide once normalized, and repos get renamed).
+  opslevel_identifier: '"github_repo_\(.id)"'
   on_component_not_found: create
   properties:
     name: '"GitHub Repo - \(.name)"'

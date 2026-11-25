@@ -1,0 +1,7 @@
+# GitHub custom properties for this repository, applied by .github/workflows/sync-repo-properties.yml.
+# Changes need security review (CODEOWNERS). OpsLevel derives Risk Priority (P1-P4) from the two values.
+#   data_classification:      public | internal | confidential | restricted
+#   external_interface_type:  none | internal_api | public_api | public_web
+# Why: <one line on what data this repo holds and how it's exposed>
+data_classification: internal
+external_interface_type: none

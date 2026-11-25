@@ -30,6 +30,12 @@ Repositories that match no Service are skipped (they show as warnings on the int
 on repositories whose name doesn't match. One repository maps to one Service; a monorepo's metadata goes to one
 service only.
 
+**Several repositories on one Service:** the integration writes each repository in turn, so the Service keeps the
+values of whichever synced last. A P1 repository can be hidden behind a P4 one, and the order isn't guaranteed.
+Point only the repository that represents the Service at it (set `opslevel_service` on that one, and give the
+others an `opslevel_service` that matches no Service, e.g. `none`), or use the GitHub Repository component package,
+which grades each repository separately.
+
 ## Property aliases
 
 OpsLevel derives a property's alias from its name (`GitHub Repo ID` → `github_repo_id`), and the integration
@@ -68,7 +74,7 @@ Then open the new integration in OpsLevel and click **Sync** (it also polls on i
 
 ## Limits
 
-- Reads the first 100 repositories of the org (one page); larger orgs need paging added to the extractor.
+- Reads every repository in the org, 100 per request, following GitHub's `Link` header to the next page.
 - `Languages` holds the primary language only.
 - Not created: properties nothing syncs from GitHub (CodeQL status, branch rules, contributors); add them with
   their own source when something populates them.

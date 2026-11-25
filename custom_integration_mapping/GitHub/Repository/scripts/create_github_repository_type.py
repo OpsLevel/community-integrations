@@ -161,8 +161,10 @@ def main():
         if ctype:
             have = {n["alias"] for n in ctype["properties"]["nodes"]}
             extra = sorted(have - set(wanted))
-            print(f"\n= type exists; will add {len(set(wanted) - have)} and update {len(have & set(wanted))} properties"
-                  + (f" (left untouched, not in this script: {', '.join(extra)})" if extra else ""))
+            print(f"\n= type exists; will add {len(set(wanted) - have)} and update {len(have & set(wanted))} properties")
+            if extra:
+                print(f"! properties not in this script: {', '.join(extra)}. --apply stops until they're added to "
+                      "PROPERTIES (sending the property list could otherwise remove them).")
         else:
             print("\n+ create type with all properties")
         if not a.apply:

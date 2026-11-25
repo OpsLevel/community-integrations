@@ -37,12 +37,13 @@ Nothing runs on your infrastructure: OpsLevel calls the GitHub API with a token 
 
 | File | What it is |
 |---|---|
-| [`extract_definition.yaml`](extract_definition.yaml) | Extractor: polls `GET /orgs/<your_github_org>/repos` |
+| [`extract_definition.yaml`](extract_definition.yaml) | Extractor: polls `GET /orgs/<your_github_org>/repos`, following every page |
 | [`transform_definition.yaml`](transform_definition.yaml) | Transform: one `github_repository` component per repo, 14 properties, computed Risk Priority |
 | [`example_github_api_response.json`](example_github_api_response.json) | Sample GitHub response (3 fictional repos) to test the transform's jq locally |
 | [`scripts/create_github_repository_type.py`](scripts/create_github_repository_type.py) | Creates or updates the component type and its 14 properties (dry run unless `--apply`) |
 | [`scripts/create_github_repository_scorecard.py`](scripts/create_github_repository_scorecard.py) | Creates the 2 filters, the scorecard and its 7 checks (dry run unless `--apply`) |
 | [`terraform/`](terraform/) | Terraform / OpenTofu packages for the whole setup |
+| [`github_actions/`](github_actions/) | Optional: a workflow that sets each repo's GitHub custom properties from a file in the repo, with CODEOWNERS review |
 
 ## Prerequisites
 
@@ -91,6 +92,10 @@ and set them on your repositories:
 
 The org repos endpoint returns them under `custom_properties`. Repos without both set get no Risk Priority.
 
+To manage the values as code instead of in the GitHub UI, see [`github_actions/`](github_actions/): each repo keeps
+them in `.github/repo-properties.yml`, a security team reviews changes through CODEOWNERS, and a workflow writes
+them to GitHub on merge.
+
 ---
 
 ## Part 2: Create the OpsLevel component type
@@ -128,8 +133,9 @@ set by the integration, so each is **locked in the UI** and **not allowed in `op
 | `external_interface_type` | string | `.custom_properties.external_interface_type` |
 | `risk_priority` | `P1`–`P4` | computed, see [Risk Priority](#risk-priority) |
 
-Component identifier (alias): `github_repo_<repo name, lowercased, characters outside [a-z0-9_-] → _>`, so it
-never collides with your service aliases.
+Component identifier (alias): `github_repo_<GitHub repo id>`. The id is unique and never changes, so a renamed
+repository keeps its component, two repos whose names differ only in punctuation or case (`Order.Worker`,
+`order_worker`) never share one, and the alias never collides with your service aliases.
 
 You can also create the type in the UI (**Components → Manage Types → + New Component Type**, identifier
 `github_repository`) and add the properties above with the same aliases.
@@ -167,7 +173,7 @@ extractors:
   iterator: "."
   http_polling:
     method: GET
-    url: 'https://api.github.com/orgs/<your_github_org>/repos?per_page=100&type=all&page={{ cursor | default: ''1'' }}'
+    url: '{% if cursor %}{{ cursor }}{% else %}https://api.github.com/orgs/<your_github_org>/repos?per_page=100&type=all{% endif %}'
     headers:
     - name: Authorization
       value: Bearer {{ 'github_api_token' | secret }}
@@ -175,9 +181,15 @@ extractors:
       value: application/vnd.github+json
     - name: X-GitHub-Api-Version
       value: '2022-11-28'
+    next_cursor:
+      from: header
+      value: '.link.next.target_url // null'
 ```
 
-`external_id` must be a string, hence `.id | tostring` (the GitHub id is a number).
+- `external_id` must be a string, hence `.id | tostring` (the GitHub id is a number).
+- Paging: GitHub returns the next page's full URL in the `Link` response header (`rel="next"`). `next_cursor` reads
+  it from the header, and the URL uses it when set, otherwise the first page. The last page has no `next` link,
+  which ends the poll.
 
 ### 8. Add the transform YAML
 
@@ -188,7 +200,7 @@ Paste [`transform_definition.yaml`](transform_definition.yaml). The key parts:
 transforms:
 - external_kind: github_repos
   opslevel_kind: github_repository
-  opslevel_identifier: '"github_repo_\(.name | ascii_downcase | gsub("[^a-z0-9_-]"; "_"))"'
+  opslevel_identifier: '"github_repo_\(.id)"'
   on_component_not_found: create
   properties:
     name: '"GitHub Repo - \(.name)"'
@@ -205,7 +217,7 @@ OpsLevel reformats a saved definition (sorted keys, double-quoted strings); that
 returns. For example:
 
 ```bash
-jq -c '.[] | {id: "github_repo_\(.name | ascii_downcase | gsub("[^a-z0-9_-]"; "_"))", archived, dc: .custom_properties.data_classification}' example_github_api_response.json
+jq -c '.[] | {alias: "github_repo_\(.id)", name: "GitHub Repo - \(.name)", archived, dc: .custom_properties.data_classification}' example_github_api_response.json
 ```
 
 With every property of the transform applied, the three sample repos come out as P1 (`payments-api`: confidential
@@ -299,6 +311,11 @@ Check:
 - `<your_github_org>` was replaced in the extractor URL
 - `external_id` is `.id | tostring`, not `.id`
 
+#### Only some repositories appear
+
+Each page of 100 repositories is a separate request. Check that the extractor still has the `next_cursor` block
+(without it, only the first page is read) and that the token is valid.
+
 #### Private repositories are missing
 
 The token can't see them: check it has **All repositories** access with your org as resource owner, and that the
@@ -316,8 +333,6 @@ Run `create_github_repository_type.py --apply` first.
 
 ## Limits
 
-- **First 100 repositories only.** The extractor reads one page; GitHub pages with a `Link` header, which the
-  extractor doesn't follow. Larger orgs need paging added.
 - **Primary language only.** `top_languages` holds `.language`; the full list needs `/repos/{repo}/languages` per repo.
 - **No automatic link** between a repo component and the component it belongs to (see Part 6).
 

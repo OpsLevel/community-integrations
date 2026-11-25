@@ -18,7 +18,7 @@ one before applying the other (or give one of them a different `github_token_sec
 |---|---|---|
 | Where the data lives | A new component type, one component per repository (`GitHub Repo - <name>`) | Custom properties on your existing Services |
 | Repos without a service | Cataloged and graded | Skipped |
-| Services with several repos / monorepos | Each repo graded on its own | One repo's values per service (the last one synced) |
+| Services with several repos / monorepos | Each repo graded on its own | One repo's values per service: the last one synced wins, so a P1 repo can be hidden behind a P4 one |
 | Linking repo ↔ service | Manual **Component** relationship on each repo component | Automatic by name, or the repo's `opslevel_service` GitHub custom property |
 | Who sees the scorecard | Repo components (owned through the Component link) | The owning team, on the service they already own |
 | Catalog growth | One component per repository | None |
@@ -45,5 +45,8 @@ control (each package's `.gitignore` already excludes it).
 - OpsLevel provider v1.14.x fails to create a component type property whose `description` is `""` ("Provider
   produced inconsistent result after apply"). Every property in these packages has a description; keep it that way
   if you add more.
-- Filters reference component-type properties by alias in `key_data` (option A) and by property definition id
-  (option B).
+- `opslevel_component_type` doesn't expose property definition ids, so option A's filters reference properties by
+  alias in `key_data` (the API accepts it; confirmed working). Option B and the Python scripts use the property
+  definition id.
+- `opslevel_property_definition` has no `alias` argument and always targets the default component type, so option B
+  assumes the alias OpsLevel derives from each property name (see its README).

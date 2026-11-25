@@ -6,7 +6,7 @@ prioritizes by risk).
 
 Filters (created if missing):
   "GitHub Repositories (active)"          type is GitHub Repository AND archived is not true   -> scorecard filter
-  "GitHub Repositories - High risk"       active AND risk_priority is P1 or P2                 -> high-risk checks
+  "GitHub Repositories - High risk (P1/P2)" active AND risk_priority is P1 or P2               -> high-risk checks
 
 Checks (Custom Property checks on component type github_repository):
   Bronze   Data classification is set                 data_classification in public|internal|confidential|restricted
@@ -27,7 +27,7 @@ Run create_github_repository_type.py --apply first (it creates risk_priority). S
 Usage:
   export OPSLEVEL_API_TOKEN=...          # or OPSLEVEL_API_TOKEN=... in a .env file in the current directory
   python3 create_github_repository_scorecard.py --owner <team_alias>           # dry run
-  python3 create_github_repository_scorecard.py --owner <team_alias> --apply [--disabled] [--affects-overall]
+  python3 create_github_repository_scorecard.py --owner <team_alias> --apply [--disabled] [--affects-overall true|false]
 """
 import argparse, json, os, sys, urllib.error, urllib.request
 from pathlib import Path
@@ -146,7 +146,8 @@ def require(ol, type_name, needed):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--owner", required=True, help="alias of the team that owns the scorecard and checks")
-    ap.add_argument("--affects-overall", action="store_true", help="let the scorecard affect overall levels")
+    ap.add_argument("--affects-overall", choices=["true", "false"],
+                    help="set whether the scorecard affects overall levels (default: false on create, unchanged on update)")
     ap.add_argument("--disabled", action="store_true", help="create the checks disabled")
     ap.add_argument("--apply", action="store_true", help="make the changes (default: dry run)")
     ap.add_argument("--api-url", default=os.environ.get("OPSLEVEL_API_URL", "https://app.opslevel.com/graphql"))
@@ -186,7 +187,7 @@ def main():
             "query($after: String) { account { filters(first: 100, after: $after) { nodes { id name } "
             "pageInfo { hasNextPage endCursor } } } }", ["account", "filters"])}
         cards = ol.paged("query($after: String) { account { scorecards(first: 100, after: $after) { "
-                         "nodes { id name href categories(first: 10) { nodes { id name } } } "
+                         "nodes { id name href affectsOverallServiceLevels categories(first: 10) { nodes { id name } } } "
                          "pageInfo { hasNextPage endCursor } } } }", ["account", "scorecards"])
         card = next((c for c in cards if c["name"] == SCORECARD_NAME), None)
         existing = set()
@@ -237,8 +238,12 @@ def main():
              "value": '. == "P1" or . == "P2"'},
         ])
 
+        if a.affects_overall is not None:
+            affects = a.affects_overall == "true"
+        else:   # keep the current setting on update; off for a new scorecard
+            affects = bool(card and card.get("affectsOverallServiceLevels"))
         card_input = {"name": SCORECARD_NAME, "description": SCORECARD_DESCRIPTION, "ownerId": team["id"],
-                      "filterId": active["id"], "affectsOverallServiceLevels": a.affects_overall}
+                      "filterId": active["id"], "affectsOverallServiceLevels": affects}
         if card:
             res = ol.gql("mutation($sc: IdentifierInput!, $input: ScorecardInput!) { scorecardUpdate(scorecard: $sc, "
                          "input: $input) { scorecard { id href } errors { message } } }",

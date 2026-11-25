@@ -1,5 +1,5 @@
 ---
-# Pull every repo in the ${github_org} org. Reads the first page only (100 repos); see the README "Limits".
+# Pull every repo in the ${github_org} org, 100 per page, following GitHub's Link header (rel="next") until the last page.
 # Token: fine-grained PAT with the ${github_org} org as resource owner, All repositories, Repository permission "Metadata: Read" (covers private repos and custom_properties).
 extractors:
 - external_kind: github_repos
@@ -7,7 +7,7 @@ extractors:
   iterator: "."
   http_polling:
     method: GET
-    url: 'https://api.github.com/orgs/${github_org}/repos?per_page=100&type=all&page={{ cursor | default: ''1'' }}'
+    url: '{% if cursor %}{{ cursor }}{% else %}https://api.github.com/orgs/${github_org}/repos?per_page=100&type=all{% endif %}'
     headers:
     - name: Authorization
       value: Bearer {{ '${github_token_secret_alias}' | secret }}
@@ -15,3 +15,6 @@ extractors:
       value: application/vnd.github+json
     - name: X-GitHub-Api-Version
       value: '2022-11-28'
+    next_cursor:
+      from: header
+      value: '.link.next.target_url // null'
