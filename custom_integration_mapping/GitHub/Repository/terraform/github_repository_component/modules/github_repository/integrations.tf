@@ -1,5 +1,4 @@
-# Pull: GitHub org repos -> one GitHub Repository component each ("GitHub Repo - <name>"), with metadata and
-# a computed Risk Priority (P1-P4) from the data_classification / external_interface_type GitHub custom properties.
+# Pull: GitHub org repos -> one GitHub Repository component each ("GitHub Repo - <name>"), with repo metadata.
 resource "opslevel_integration_custom" "github_repositories" {
   name = var.github_integration_name
   etl_definition = {

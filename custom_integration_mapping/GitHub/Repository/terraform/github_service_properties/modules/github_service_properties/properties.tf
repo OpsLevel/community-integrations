@@ -59,21 +59,6 @@ locals {
       desc   = "Topics set on the repository in GitHub."
       schema = { type = "array", items = { type = "string" }, uniqueItems = true }
     }
-    data_classification = {
-      name   = "GitHub Data Classification"
-      desc   = "GitHub custom property data_classification (public, internal, confidential, restricted)."
-      schema = { type = "string" }
-    }
-    external_interface_type = {
-      name   = "GitHub External Interface Type"
-      desc   = "GitHub custom property external_interface_type (none, internal_api, public_api, public_web)."
-      schema = { type = "string" }
-    }
-    risk_priority = {
-      name   = "GitHub Risk Priority"
-      desc   = "Computed each sync from data classification x external interface type, one step higher for public repos holding non-public data; archived repos are P4. Unset until both GitHub custom properties are set. P1 = sensitive data behind a public interface."
-      schema = { type = "string", enum = ["P1", "P2", "P3", "P4"] }
-    }
   }
 
   # Expected alias for each property (derived from its name), used by the transform.

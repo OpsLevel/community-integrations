@@ -15,6 +15,25 @@ variable "service_type_alias" {
   default     = "service"
 }
 
+# --- risk tags ---
+variable "service_classifications" {
+  description = "Per Service alias: data_classification, external_interface_type and optionally risk_priority (derived when null). Set as tags on the Service."
+  type = map(object({
+    data_classification     = string
+    external_interface_type = string
+    risk_priority           = optional(string)
+  }))
+  default = {}
+  validation {
+    condition = alltrue([for c in values(var.service_classifications) :
+      contains(["public", "internal", "confidential", "restricted"], c.data_classification) &&
+      contains(["none", "internal_api", "public_api", "public_web"], c.external_interface_type) &&
+      (c.risk_priority == null || contains(["P1", "P2", "P3", "P4"], coalesce(c.risk_priority, "P4")))
+    ])
+    error_message = "data_classification: public|internal|confidential|restricted; external_interface_type: none|internal_api|public_api|public_web; risk_priority: P1-P4."
+  }
+}
+
 # --- integrations ---
 variable "integration_name" {
   type    = string

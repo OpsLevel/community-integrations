@@ -9,13 +9,13 @@
     "archived": false,
     "size": 2048,
     "language": "Go",
-    "topics": ["payments", "api"],
+    "topics": [
+      "payments",
+      "api"
+    ],
     "created_at": "2023-03-14T09:26:53Z",
     "pushed_at": "2026-11-18T16:02:11Z",
-    "custom_properties": {
-      "data_classification": "confidential",
-      "external_interface_type": "public_api"
-    }
+    "custom_properties": {}
   },
   {
     "id": 700000002,
@@ -30,10 +30,7 @@
     "topics": [],
     "created_at": "2024-07-01T12:00:00Z",
     "pushed_at": "2026-06-02T08:45:30Z",
-    "custom_properties": {
-      "data_classification": "internal",
-      "external_interface_type": "internal_api"
-    }
+    "custom_properties": {}
   },
   {
     "id": 700000003,

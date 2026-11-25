@@ -1,4 +1,0 @@
-# Repository risk classification (GitHub custom properties) needs security sign-off.
-# Replace @your-org/security with your security or DevSecOps team.
-/.github/repo-properties.yml  @your-org/security
-/.github/workflows/sync-repo-properties.yml  @your-org/security

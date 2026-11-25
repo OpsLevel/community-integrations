@@ -1,28 +1,28 @@
 #!/usr/bin/env python3
 """
 Create the "(Use Case) Security - GitHub Repository Risk" scorecard: risk-based checks on GitHub Repository
-components (GitHub repo metadata such as data classification and external interface type feeding a rubric that
-prioritizes by risk).
+components, graded on their risk tags (data_classification, external_interface_type, risk_priority) and the repo
+metadata the integration syncs.
 
 Filters (created if missing):
-  "GitHub Repositories (active)"          type is GitHub Repository AND archived is not true   -> scorecard filter
-  "GitHub Repositories - High risk (P1/P2)" active AND risk_priority is P1 or P2               -> high-risk checks
+  "GitHub Repositories (active)"                   type is GitHub Repository AND archived is not true -> scorecard
+  "GitHub Repositories - risk_priority P1 or P2"   risk_priority tag is P1 OR P2 (own filter: one connective each)
+  "GitHub Repositories - High risk (P1/P2)"        active AND the P1/P2 filter                         -> high-risk checks
 
-Checks (Custom Property checks on component type github_repository):
-  Bronze   Data classification is set                 data_classification in public|internal|confidential|restricted
-  Bronze   External interface type is set             external_interface_type in none|internal_api|public_api|public_web
-  Silver   Repository has a description               repository_description is non-blank
-  Silver   Not a P1 risk                              risk_priority != P1
-  Gold     High risk: repository is not public        visibility != public               [High risk filter]
-  Diamond  High risk: pushed to in the last 90 days   updated_date within 90 days        [High risk filter]
-  Diamond  Risk priority P3 or lower                  risk_priority is P3 or P4
+Checks (Tag Defined checks on the risk tags, Custom Property checks on component type github_repository):
+  Bronze   Data classification tag is set             tag data_classification matches ^(public|internal|confidential|restricted)$
+  Bronze   External interface type tag is set         tag external_interface_type matches ^(none|internal_api|public_api|public_web)$
+  Silver   Repository has a description               property repository_description is non-blank
+  Silver   Not a P1 risk                              tag risk_priority != P1
+  Gold     High risk: repository is not public        property visibility != public      [High risk filter]
+  Diamond  High risk: pushed to in the last 90 days   property updated_date within 90 days [High risk filter]
+  Diamond  Risk priority P3 or lower                  tag risk_priority matches ^P[34]$
 
-All predicates are jq (satisfies_jq_expression) run against the property value. A check whose filter excludes a
-repo doesn't apply to it, so low-risk repos aren't held back by the high-risk controls. If the rubric has no
-Diamond level, the Diamond checks go on the highest level it has.
+A check whose filter excludes a repo doesn't apply to it, so low-risk repos aren't held back by the high-risk
+controls. If the rubric has no Diamond level, the Diamond checks go on the highest level it has.
 
 Dry run unless --apply. Re-running is safe: filters and the scorecard are matched by name, existing checks by name.
-Run create_github_repository_type.py --apply first (it creates risk_priority). Stdlib only.
+Run create_github_repository_type.py --apply first. Stdlib only.
 
 Usage:
   export OPSLEVEL_API_TOKEN=...          # or OPSLEVEL_API_TOKEN=... in a .env file in the current directory
@@ -35,40 +35,42 @@ from pathlib import Path
 TYPE_ALIAS = "github_repository"
 SCORECARD_NAME = "(Use Case) Security - GitHub Repository Risk"
 SCORECARD_DESCRIPTION = (
-    "Risk-based standards for GitHub repositories. Each repo's **Risk Priority** (P1-P4) comes from two GitHub "
-    "custom properties: **data classification** (public, internal, confidential, restricted) and **external "
-    "interface type** (none, internal_api, public_api, public_web), one step higher when a public repo holds "
-    "non-public data. P1 = confidential or restricted data behind a public interface.\n\n"
-    "- **Bronze**: the repo is classified (both custom properties set in GitHub).\n"
+    "Risk-based standards for GitHub repositories. Each repo's **risk_priority** tag (P1-P4) comes from its "
+    "**data_classification** tag (public, internal, confidential, restricted) and **external_interface_type** tag "
+    "(none, internal_api, public_api, public_web). P1 = confidential or restricted data behind a public interface.\n\n"
+    "- **Bronze**: the repo is classified (data_classification and external_interface_type tags set).\n"
     "- **Silver**: it has a description and isn't P1.\n"
     "- **Gold**: P1/P2 repos aren't public.\n"
     "- **Diamond** (Gold in rubrics with three levels): P1/P2 repos are actively maintained, and the repo's risk "
     "is P3 or lower.\n\n"
     "Archived repositories are out of scope.")
 ACTIVE_FILTER = "GitHub Repositories (active)"
+P1_P2_FILTER = "GitHub Repositories - risk_priority P1 or P2"
 HIGH_RISK_FILTER = "GitHub Repositories - High risk (P1/P2)"
 
-CLASSES = '"public", "internal", "confidential", "restricted"'
-INTERFACES = '"none", "internal_api", "public_api", "public_web"'
-# (name, level index, property alias, jq on the value, filter key or None, notes)
+# (kind, name, level index, tag key or property alias, predicate type, predicate value, high risk only, notes)
+#   kind "tag":      Tag Defined check on the component's tags
+#   kind "property": Custom Property check on the github_repository type; jq runs against the property value
 CHECKS = [
-    ("Data classification is set", 1, "data_classification", f"IN({CLASSES})", None,
-     "Set the `data_classification` custom property on the repo in GitHub (Settings > Custom properties): "
-     "public, internal, confidential or restricted."),
-    ("External interface type is set", 1, "external_interface_type", f"IN({INTERFACES})", None,
-     "Set the `external_interface_type` custom property on the repo in GitHub: none, internal_api, public_api "
-     "or public_web."),
-    ("Repository has a description", 2, "repository_description", 'type == "string" and test("\\\\S")', None,
+    ("tag", "Data classification tag is set", 1, "data_classification", "matches_regex",
+     "^(public|internal|confidential|restricted)$", False,
+     "Tag the component `data_classification`: public, internal, confidential or restricted."),
+    ("tag", "External interface type tag is set", 1, "external_interface_type", "matches_regex",
+     "^(none|internal_api|public_api|public_web)$", False,
+     "Tag the component `external_interface_type`: none, internal_api, public_api or public_web."),
+    ("property", "Repository has a description", 2, "repository_description", "satisfies_jq_expression",
+     'type == "string" and test("\\\\S")', False,
      "Add a description to the repository in GitHub so owners and reviewers know what it holds."),
-    ("Not a P1 risk", 2, "risk_priority", '. != "P1"', None,
+    ("tag", "Not a P1 risk", 2, "risk_priority", "does_not_equal", "P1", False,
      "P1 means confidential or restricted data behind a public interface. Reduce exposure (internal-only "
      "interface, private repo) or confirm the classification with security."),
-    ("High risk: repository is not public", 3, "visibility", '. != "public"', "high",
+    ("property", "High risk: repository is not public", 3, "visibility", "satisfies_jq_expression",
+     '. != "public"', True,
      "P1/P2 repos hold sensitive data or expose public interfaces; make the repository private or internal."),
-    ("High risk: pushed to in the last 90 days", 4, "updated_date",
-     '(sub("\\\\.[0-9]+"; "") | fromdateiso8601) > (now - 7776000)', "high",
+    ("property", "High risk: pushed to in the last 90 days", 4, "updated_date", "satisfies_jq_expression",
+     '(sub("\\\\.[0-9]+"; "") | fromdateiso8601) > (now - 7776000)', True,
      "Unmaintained P1/P2 repos miss security fixes. Ship a change, or archive the repo if it's no longer used."),
-    ("Risk priority P3 or lower", 4, "risk_priority", '. == "P3" or . == "P4"', None,
+    ("tag", "Risk priority P3 or lower", 4, "risk_priority", "matches_regex", "^P[34]$", False,
      "Lower the repo's risk: narrow its external interface or move sensitive data out of it."),
 ]
 
@@ -156,8 +158,8 @@ def main():
     token = os.environ.get("OPSLEVEL_API_TOKEN")
 
     print(f"Scorecard {SCORECARD_NAME!r} (owner {a.owner}), filter {ACTIVE_FILTER!r}")
-    for name, lvl, alias, jq, flt, _ in CHECKS:
-        print(f"  L{lvl}  {name:<58} {alias}: {jq}" + ("   [high risk]" if flt else ""))
+    for kind, name, lvl, key, ptype, value, high_risk, _ in CHECKS:
+        print(f"  L{lvl}  {name:<42} {kind:<8} {key} {ptype} {value}" + ("   [high risk]" if high_risk else ""))
     if not token:
         if a.apply:
             sys.exit("OPSLEVEL_API_TOKEN is not set (env or ./.env)")
@@ -175,7 +177,7 @@ def main():
         if not ctype:
             sys.exit(f"No component type {TYPE_ALIAS!r}; run create_github_repository_type.py --apply first.")
         props = {p["alias"]: p["id"] for p in ctype["properties"]["nodes"]}
-        missing = sorted(({c[2] for c in CHECKS} | {"archived"}) - set(props))
+        missing = sorted(({c[3] for c in CHECKS if c[0] == "property"} | {"archived"}) - set(props))
         if missing:
             sys.exit(f"{ctype['name']} lacks properties {missing}; run create_github_repository_type.py --apply.")
         levels = {l["index"]: l for l in ol.paged(
@@ -203,11 +205,11 @@ def main():
         return levels[min(index, max(levels))]
 
     print(f"\nOwner {team['name']}; type {ctype['name']}")
-    for n in (ACTIVE_FILTER, HIGH_RISK_FILTER):
+    for n in (ACTIVE_FILTER, P1_P2_FILTER, HIGH_RISK_FILTER):
         print(f"  {'=' if n in filters else '+'} filter {n}")
     print(f"  {'=' if card else '+'} scorecard {SCORECARD_NAME}" + (f"  {card.get('href', '')}" if card else ""))
     for c in CHECKS:
-        print(f"    {'=' if c[0] in existing else '+'} {c[0]}  ({level(c[1])['name']})")
+        print(f"    {'=' if c[1] in existing else '+'} {c[1]}  ({level(c[2])['name']})")
     if not a.apply:
         print("\nDry run only. Re-run with --apply.")
         return
@@ -218,12 +220,15 @@ def main():
         require(ol, "CheckServicePropertyCreateInput",
                 {"name", "categoryId", "levelId", "enabled", "filterId", "notes", "serviceProperty",
                  "componentType", "propertyDefinition", "propertyValuePredicate"})
+        require(ol, "CheckTagDefinedCreateInput",
+                {"name", "categoryId", "levelId", "enabled", "filterId", "notes", "tagKey", "tagPredicate"})
 
-        def ensure_filter(name, predicates):
+        def ensure_filter(name, predicates, connective="and"):
             if name in filters:
                 return filters[name]
             f = ol.mutate("filterCreate", "FilterCreateInput",
-                          {"name": name, "connective": "and", "predicates": predicates}, "filter { id name }")["filter"]
+                          {"name": name, "connective": connective, "predicates": predicates},
+                          "filter { id name }")["filter"]
             print(f"  + filter {name}")
             return f
 
@@ -232,10 +237,13 @@ def main():
             {"key": "properties", "keyData": props["archived"], "type": "satisfies_jq_expression",
              "value": ". != true"},
         ])
+        p1_p2 = ensure_filter(P1_P2_FILTER, [
+            {"key": "tags", "keyData": "risk_priority", "type": "equals", "value": "P1"},
+            {"key": "tags", "keyData": "risk_priority", "type": "equals", "value": "P2"},
+        ], connective="or")
         high = ensure_filter(HIGH_RISK_FILTER, [
             {"key": "filter_id", "type": "matches", "value": active["id"]},
-            {"key": "properties", "keyData": props["risk_priority"], "type": "satisfies_jq_expression",
-             "value": '. == "P1" or . == "P2"'},
+            {"key": "filter_id", "type": "matches", "value": p1_p2["id"]},
         ])
 
         if a.affects_overall is not None:
@@ -264,17 +272,23 @@ def main():
         sys.exit(str(e))
 
     failed = 0
-    for name, lvl, alias, jq, flt, notes in CHECKS:
+    for kind, name, lvl, key, ptype, value, high_risk, notes in CHECKS:
         if name in existing:
             continue
         payload = {"name": name, "categoryId": cats[0]["id"], "levelId": level(lvl)["id"],
-                   "enabled": not a.disabled, "notes": notes, "serviceProperty": "custom_property",
-                   "componentType": {"alias": TYPE_ALIAS}, "propertyDefinition": {"alias": alias},
-                   "propertyValuePredicate": {"type": "satisfies_jq_expression", "value": jq}}
-        if flt:
+                   "enabled": not a.disabled, "notes": notes}
+        if high_risk:
             payload["filterId"] = high["id"]
+        if kind == "tag":
+            payload.update({"tagKey": key, "tagPredicate": {"type": ptype, "value": value}})
+            field, input_type = "checkTagDefinedCreate", "CheckTagDefinedCreateInput"
+        else:
+            payload.update({"serviceProperty": "custom_property", "componentType": {"alias": TYPE_ALIAS},
+                            "propertyDefinition": {"alias": key},
+                            "propertyValuePredicate": {"type": ptype, "value": value}})
+            field, input_type = "checkServicePropertyCreate", "CheckServicePropertyCreateInput"
         try:
-            ol.mutate("checkServicePropertyCreate", "CheckServicePropertyCreateInput", payload, "check { id name }")
+            ol.mutate(field, input_type, payload, "check { id name }")
             print(f"    + {name}")
         except OpsLevelError as e:
             failed += 1

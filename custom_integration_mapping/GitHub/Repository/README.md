@@ -1,9 +1,9 @@
 # GitHub Repositories → OpsLevel Custom Integration
 
 This guide sets up a **pull** custom integration that reads every repository in a GitHub organization and creates
-one **GitHub Repository** component per repo in OpsLevel, with repo metadata as custom properties. It also computes
-a **Risk Priority** (P1–P4) from two GitHub custom properties, `data_classification` and `external_interface_type`,
-and grades the repositories on a risk-based scorecard.
+one **GitHub Repository** component per repo in OpsLevel, with repo metadata as custom properties. Each repo is then
+classified with three OpsLevel tags (`data_classification`, `external_interface_type`, `risk_priority`) and graded
+on a risk-based scorecard.
 
 OpsLevel doesn't run maturity checks on the repository object itself, so a component per repository is what makes
 repository-level checks possible.
@@ -11,15 +11,15 @@ repository-level checks possible.
 ## Overview
 
 ```text
-GitHub REST API: GET /orgs/<org>/repos   (polled by OpsLevel on a schedule)
+GitHub REST API: GET /orgs/<org>/repos   (polled by OpsLevel on a schedule, every page)
   ↓
 OpsLevel Custom Integration (pull)
   ↓
 Extractor YAML: one record per repo (external_kind github_repos)
   ↓
-Transform YAML: properties + computed risk_priority
+Transform YAML: repo metadata as properties
   ↓
-"GitHub Repository" components (one per repo)
+"GitHub Repository" components (one per repo)  +  risk tags you set (UI or Terraform)
   ↓
 Filters + "(Use Case) Security - GitHub Repository Risk" scorecard
 ```
@@ -30,40 +30,39 @@ Nothing runs on your infrastructure: OpsLevel calls the GitHub API with a token 
 
 | Option | Use it when |
 |---|---|
-| **[Terraform](terraform/)** | You want everything (component type, secret, integration, filters, scorecard) created in one `apply` and kept in code. Also includes an alternative package that writes the metadata onto your existing **Services** instead of creating new components. |
-| **Step by step** (this guide) | You want to see and adjust each piece. Two stdlib-only Python scripts create the component type and the scorecard through the GraphQL API; the integration is pasted in the UI. |
+| **[Terraform](terraform/)** | You want everything (component type, secret, integration, risk tags, filters, scorecard) created and kept in code. Classifications live in one map in your tfvars, which suits classifying many repos. Also includes an alternative package that writes the metadata onto your existing **Services** instead of creating new components. |
+| **Step by step** (this guide) | You want to see and adjust each piece. Two stdlib-only Python scripts create the component type and the scorecard through the GraphQL API; the integration is pasted in the UI and tags are set in the UI. |
 
 ## Files
 
 | File | What it is |
 |---|---|
 | [`extract_definition.yaml`](extract_definition.yaml) | Extractor: polls `GET /orgs/<your_github_org>/repos`, following every page |
-| [`transform_definition.yaml`](transform_definition.yaml) | Transform: one `github_repository` component per repo, 14 properties, computed Risk Priority |
+| [`transform_definition.yaml`](transform_definition.yaml) | Transform: one `github_repository` component per repo, 11 properties |
 | [`example_github_api_response.json`](example_github_api_response.json) | Sample GitHub response (3 fictional repos) to test the transform's jq locally |
-| [`scripts/create_github_repository_type.py`](scripts/create_github_repository_type.py) | Creates or updates the component type and its 14 properties (dry run unless `--apply`) |
-| [`scripts/create_github_repository_scorecard.py`](scripts/create_github_repository_scorecard.py) | Creates the 2 filters, the scorecard and its 7 checks (dry run unless `--apply`) |
+| [`scripts/create_github_repository_type.py`](scripts/create_github_repository_type.py) | Creates or updates the component type and its 11 properties (dry run unless `--apply`) |
+| [`scripts/create_github_repository_scorecard.py`](scripts/create_github_repository_scorecard.py) | Creates the 3 filters, the scorecard and its 7 checks (dry run unless `--apply`) |
 | [`terraform/`](terraform/) | Terraform / OpenTofu packages for the whole setup |
-| [`github_actions/`](github_actions/) | Optional: a workflow that sets each repo's GitHub custom properties from a file in the repo, with CODEOWNERS review |
 
 ## Prerequisites
 
 - An OpsLevel account with access to Custom Integrations, component types, filters and scorecards, and an
   OpsLevel API token with write access (for the scripts or Terraform).
 - A team in OpsLevel to own the scorecard and checks.
-- A GitHub organization, and permission to create a fine-grained personal access token for it and to define
-  organization custom properties.
+- A GitHub organization, and permission to create a fine-grained personal access token for it.
 - Python 3.9+ for the scripts (standard library only).
 
 ---
 
 ## Suggested rollout plan
 
-1. Create the GitHub token and custom properties (Part 1).
+1. Create the GitHub token (Part 1).
 2. Create the component type and its relationship (Part 2).
 3. Store the token as an OpsLevel secret and create the custom integration (Part 3).
 4. Sync and validate the components (Part 4).
-5. Create the filters and the scorecard (Part 5).
-6. Link each repo component to the component it belongs to (Part 6).
+5. Classify the repositories with tags (Part 5).
+6. Create the filters and the scorecard (Part 6).
+7. Link each repo component to the component it belongs to (Part 7).
 
 ---
 
@@ -77,30 +76,14 @@ Create a **fine-grained personal access token**:
 - Repository access: **All repositories**
 - Repository permissions: **Metadata: Read** (the default)
 
-That covers private repositories and their custom property values; no organization permission is needed. A classic
-token with the `repo` scope also works. If your org requires approval for fine-grained tokens, an org owner approves it.
-
-### 2. Define the GitHub custom properties
-
-In **GitHub → Organization settings → Custom properties**, define two properties (single select is recommended)
-and set them on your repositories:
-
-| Property | Values |
-|---|---|
-| `data_classification` | `public`, `internal`, `confidential`, `restricted` |
-| `external_interface_type` | `none`, `internal_api`, `public_api`, `public_web` |
-
-The org repos endpoint returns them under `custom_properties`. Repos without both set get no Risk Priority.
-
-To manage the values as code instead of in the GitHub UI, see [`github_actions/`](github_actions/): each repo keeps
-them in `.github/repo-properties.yml`, a security team reviews changes through CODEOWNERS, and a workflow writes
-them to GitHub on merge.
+That covers private repositories; no organization permission is needed. A classic token with the `repo` scope also
+works. If your org requires approval for fine-grained tokens, an org owner approves it.
 
 ---
 
 ## Part 2: Create the OpsLevel component type
 
-### 3. Create the type and properties
+### 2. Create the type and properties
 
 ```bash
 cd scripts
@@ -111,9 +94,10 @@ python3 create_github_repository_type.py --apply
 ```
 
 The script creates the **GitHub Repository** type (alias `github_repository`) or, if it already exists, adds the
-missing properties and updates the others (it never removes a property, and stops if the type has properties it
-doesn't know). It checks the GraphQL input fields by introspection before changing anything. Every property is
-set by the integration, so each is **locked in the UI** and **not allowed in `opslevel.yml`**.
+missing properties and updates the others. It never removes a property: if the type has properties the script
+doesn't know, the dry run lists them and `--apply` stops until they're added to `PROPERTIES`. It checks the GraphQL
+input fields by introspection before changing anything. Every property is set by the integration, so each is
+**locked in the UI** and **not allowed in `opslevel.yml`**.
 
 | Property (alias) | Type | Source (GitHub field) |
 |---|---|---|
@@ -129,39 +113,37 @@ set by the integration, so each is **locked in the UI** and **not allowed in `op
 | `age_in_months` | integer | whole calendar months between `.created_at` and now |
 | `top_languages` | string array | `[.language]` (primary language only) |
 | `github_topics` | string array | `.topics` |
-| `data_classification` | string | `.custom_properties.data_classification` |
-| `external_interface_type` | string | `.custom_properties.external_interface_type` |
-| `risk_priority` | `P1`–`P4` | computed, see [Risk Priority](#risk-priority) |
 
 Component identifier (alias): `github_repo_<GitHub repo id>`. The id is unique and never changes, so a renamed
 repository keeps its component, two repos whose names differ only in punctuation or case (`Order.Worker`,
-`order_worker`) never share one, and the alias never collides with your service aliases.
+`order_worker`) never share one, and the alias never collides with your service aliases. OpsLevel also gives each
+component an alias derived from its name (`GitHub Repo - payments-api` → `github_repo_-_payments-api`).
 
 You can also create the type in the UI (**Components → Manage Types → + New Component Type**, identifier
 `github_repository`) and add the properties above with the same aliases.
 
-### 4. Add the Component relationship
+### 3. Add the Component relationship
 
 Nothing links a GitHub Repository component back to the Service, Backend, Frontend, etc. that the repository
 belongs to: managed relationship rules match properties, aliases or contact details, not attached repositories.
 Add a relationship to the type by hand: **Components → Manage Types → GitHub Repository → Relationships**, name
-**Component**, alias `component`, allowed on the default category. You'll set it on each repo in Part 6.
+**Component**, alias `component`, allowed on the default category. You'll set it on each repo in Part 7.
 
 ---
 
 ## Part 3: Create the custom integration
 
-### 5. Store the GitHub token as an OpsLevel secret
+### 4. Store the GitHub token as an OpsLevel secret
 
 **Settings → Secrets → New Secret**, alias **`github_api_token`**, value: the token from step 1. The extractor
 reads it with `{{ 'github_api_token' | secret }}`.
 
-### 6. Create the custom integration
+### 5. Create the custom integration
 
 **Integrations → + New Integration → Custom Integration**. Name it, for example,
 `Integration Data Mapping (Pull) - GitHub Repositories`.
 
-### 7. Add the extractor YAML
+### 6. Add the extractor YAML
 
 Paste [`extract_definition.yaml`](extract_definition.yaml) and replace `<your_github_org>` with your org's login:
 
@@ -191,7 +173,7 @@ extractors:
   it from the header, and the URL uses it when set, otherwise the first page. The last page has no `next` link,
   which ends the poll.
 
-### 8. Add the transform YAML
+### 7. Add the transform YAML
 
 Paste [`transform_definition.yaml`](transform_definition.yaml). The key parts:
 
@@ -206,7 +188,7 @@ transforms:
     name: '"GitHub Repo - \(.name)"'
     github_id: .id
     repository_name: .full_name
-    # ... see transform_definition.yaml for all 14 properties, including age_in_months and risk_priority
+    # ... see transform_definition.yaml for all 11 properties, including age_in_months
 ```
 
 OpsLevel reformats a saved definition (sorted keys, double-quoted strings); that's expected.
@@ -217,17 +199,14 @@ OpsLevel reformats a saved definition (sorted keys, double-quoted strings); that
 returns. For example:
 
 ```bash
-jq -c '.[] | {alias: "github_repo_\(.id)", name: "GitHub Repo - \(.name)", archived, dc: .custom_properties.data_classification}' example_github_api_response.json
+jq -c '.[] | {alias: "github_repo_\(.id)", name: "GitHub Repo - \(.name)", archived, empty: (.size == 0)}' example_github_api_response.json
 ```
-
-With every property of the transform applied, the three sample repos come out as P1 (`payments-api`: confidential
-data behind a public API), P3 (`Order.Worker`: internal data, internal API) and P4 (`legacy-site`: archived).
 
 ---
 
 ## Part 4: Sync and validate
 
-### 9. Sync
+### 8. Sync
 
 Click **Sync** on the integration (it also polls on its own schedule). Then check:
 
@@ -237,12 +216,22 @@ Click **Sync** on the integration (it also polls on its own schedule). Then chec
 
 ---
 
-## Part 5: Scorecard
+## Part 5: Classify repositories
+
+### Risk tags
+
+Each GitHub Repository component gets three tags. They aren't synced from GitHub: someone who knows what the repo
+holds sets them (security, or the owning team with security's review).
+
+| Tag | Values |
+|---|---|
+| `data_classification` | `public`, `internal`, `confidential`, `restricted` |
+| `external_interface_type` | `none` (library, batch job, docs), `internal_api` (only internal callers), `public_api` (reachable from outside), `public_web` (a site or app end users open) |
+| `risk_priority` | `P1`–`P4` |
 
 ### Risk Priority
 
-Computed in the transform on every sync from the two GitHub custom properties. Unset until both are set; archived
-repositories are always P4.
+Suggested default for `risk_priority` (impact × exposure; a starting point to adjust, not from a published standard):
 
 | Data classification | Public interface (`public_api`, `public_web`) | `internal_api` / `none` |
 |---|---|---|
@@ -250,43 +239,61 @@ repositories are always P4.
 | internal | P2 | P3 |
 | public | P3 | P4 |
 
-A **public** repository holding non-public data moves up one step (e.g. internal + internal_api = P3 → P2).
-Property checks can't compare two properties, which is why the combination is computed into one `risk_priority`
-value that the checks and the high-risk filter key off.
+Set a different value where you know better (for example, an internal batch job that handles payment files).
+
+### 9. Set the tags
+
+- **By hand:** on each GitHub Repository component, **Tags → Add tag** with the three keys and values.
+- **As code:** the [Terraform component package](terraform/github_repository_component/) takes a
+  `repo_classifications` map keyed by repo name and tags every component, deriving `risk_priority` from the table
+  above when you leave it out. Its tags attach to the name-derived alias (`github_repo_-_<repo>`), so run it after
+  the first sync.
+
+Tags live on the OpsLevel component, so they survive syncs, and a renamed repo keeps them (its component keeps the
+same `github_repo_<id>` identifier).
+
+---
+
+## Part 6: Scorecard
 
 ### 10. Create the filters, scorecard and checks
 
 ```bash
 cd scripts
 python3 create_github_repository_scorecard.py --owner <team_alias>            # dry run
-python3 create_github_repository_scorecard.py --owner <team_alias> --apply    # [--disabled] [--affects-overall]
+python3 create_github_repository_scorecard.py --owner <team_alias> --apply    # [--disabled] [--affects-overall true|false]
 ```
 
 Re-running is safe: filters, the scorecard and its checks are matched by name and only missing ones are created.
+`--affects-overall` sets whether the scorecard affects overall levels (off for a new scorecard; left as is on a
+re-run unless you pass it).
 
 | Filter | Matches |
 |---|---|
 | **GitHub Repositories (active)** | type GitHub Repository and `archived` isn't true (the scorecard's filter) |
-| **GitHub Repositories - High risk (P1/P2)** | active and `risk_priority` is P1 or P2 (used by the high-risk checks) |
+| **GitHub Repositories - risk_priority P1 or P2** | `risk_priority` tag is P1 **or** P2 (a filter has one connective, so the OR is its own filter) |
+| **GitHub Repositories - High risk (P1/P2)** | both of the above (used by the high-risk checks) |
 
-Scorecard **(Use Case) Security - GitHub Repository Risk**, all Custom Property checks with a jq predicate:
+Scorecard **(Use Case) Security - GitHub Repository Risk**: four Tag Defined checks on the risk tags and three
+Custom Property checks on the synced metadata.
 
 | Level | Check | Passes when |
 |---|---|---|
-| Bronze | Data classification is set | `data_classification` is public / internal / confidential / restricted |
-| Bronze | External interface type is set | `external_interface_type` is none / internal_api / public_api / public_web |
-| Silver | Repository has a description | `repository_description` isn't blank |
-| Silver | Not a P1 risk | `risk_priority` != P1 |
-| Gold | High risk: repository is not public | `visibility` != public (P1/P2 only) |
-| Diamond* | High risk: pushed to in the last 90 days | `updated_date` within 90 days (P1/P2 only) |
-| Diamond* | Risk priority P3 or lower | `risk_priority` is P3 or P4 |
+| Bronze | Data classification tag is set | `data_classification` tag is public / internal / confidential / restricted |
+| Bronze | External interface type tag is set | `external_interface_type` tag is none / internal_api / public_api / public_web |
+| Silver | Repository has a description | `repository_description` property isn't blank |
+| Silver | Not a P1 risk | `risk_priority` tag isn't P1 |
+| Gold | High risk: repository is not public | `visibility` property isn't public (P1/P2 only) |
+| Diamond* | High risk: pushed to in the last 90 days | `updated_date` property within 90 days (P1/P2 only) |
+| Diamond* | Risk priority P3 or lower | `risk_priority` tag is P3 or P4 |
 
 \* On the highest level your rubric has if it has no Diamond level. Checks limited to P1/P2 don't apply to
-lower-risk repos, so those aren't held back by them.
+lower-risk repos, so those aren't held back by them. A Tag Defined check fails when the tag is missing, so
+unclassified repos stay at Beginner.
 
 ---
 
-## Part 6: Link repos to their components
+## Part 7: Link repos to their components
 
 ### 11. Set the Component relationship
 
@@ -321,9 +328,10 @@ Each page of 100 repositories is a separate request. Check that the extractor st
 The token can't see them: check it has **All repositories** access with your org as resource owner, and that the
 org has approved it if approval is required.
 
-#### `data_classification` / `risk_priority` are empty
+#### Every repo fails the Bronze checks
 
-The repo doesn't have both GitHub custom properties set, or the token can't read them (Metadata: Read is enough).
+No repo has its risk tags yet (Part 5). Tag keys must be exactly `data_classification` and
+`external_interface_type`, with values from the tables above.
 
 #### The scorecard script stops with "lacks properties"
 
@@ -334,9 +342,27 @@ Run `create_github_repository_type.py --apply` first.
 ## Limits
 
 - **Primary language only.** `top_languages` holds `.language`; the full list needs `/repos/{repo}/languages` per repo.
-- **No automatic link** between a repo component and the component it belongs to (see Part 6).
+- **Classification is kept in OpsLevel, not GitHub,** so it can drift from reality unless someone owns updating it.
+- **No automatic link** between a repo component and the component it belongs to (see Part 7).
 
-## Extending the integration
+## Potential additions
+
+### Classification from GitHub custom properties
+
+Instead of tags set in OpsLevel, the classification can live in GitHub and be synced like the other metadata. This
+needs configuring custom properties in GitHub first:
+
+1. In **GitHub → Organization settings → Custom properties**, create `data_classification` and
+   `external_interface_type` (single select, values above) and set them on each repository: by hand, through the
+   API, or from a file in each repo with a workflow (tick **Allow repository actors to set this property** for the
+   workflow route).
+2. Add properties for them to the component type, and map them in the transform:
+   `data_classification: .custom_properties.data_classification // null`, likewise for
+   `external_interface_type`. Compute `risk_priority` in the transform with jq from the two values. The org repos
+   endpoint already returns `custom_properties`; the token's Metadata: Read permission is enough to read them.
+3. Point the Bronze checks and the P1/P2 filter at the properties instead of the tags.
+
+### Extending the integration
 
 - **More properties from the same payload.** The transform receives the full repo object, so properties such as
   `default_branch: .default_branch` or `has_issues: .has_issues` only need a property on the type and a line in the

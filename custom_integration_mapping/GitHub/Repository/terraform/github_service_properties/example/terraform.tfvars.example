@@ -3,3 +3,9 @@ github_org       = "<your GitHub org>"
 owner_team_alias = "<OpsLevel team alias>"
 # rubric_level_count = 3   # 4 if your rubric has a fourth level (Diamond)
 github_token     = "github_pat_..."
+
+# Risk tags on Services, keyed by Service alias.
+# service_classifications = {
+#   "payments_api" = { data_classification = "restricted", external_interface_type = "public_api" }
+#   "docs_site"    = { data_classification = "public", external_interface_type = "public_web" }
+# }

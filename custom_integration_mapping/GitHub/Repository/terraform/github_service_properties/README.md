@@ -11,18 +11,19 @@ risk-based standards. No new component type: owners see the data and the scoreca
 
 | Resource | Details |
 |---|---|
-| 14 custom properties on the default component type (Service), prefixed `github_` | Set by the integration, locked in the UI (below) |
+| 11 custom properties on the default component type (Service), prefixed `github_` | Set by the integration, locked in the UI (below) |
 | Custom integration **Integration Data Mapping (Pull) - GitHub Repo Metadata on Services** | Polls `GET /orgs/<org>/repos` and writes each repository's metadata onto its Service. Creates nothing; repositories with no matching Service are skipped |
 | Secret `github_api_token` | The GitHub token the integration uses (`manage_secrets = false` to reuse an existing one) |
-| Filters | **Services with a GitHub repo (active)** and **Services with a GitHub repo - High risk (P1/P2)** |
-| Scorecard **(Use Case) Security - Service GitHub Repository Risk** | 7 Custom Property checks ([main guide](../../README.md#part-5-scorecard)) |
+| Risk tags | `data_classification`, `external_interface_type` and `risk_priority` on each Service in `service_classifications` |
+| Filters | **Services with a GitHub repo (active)**, **Services - risk_priority P1 or P2** (tag) and **Services with a GitHub repo - High risk (P1/P2)** (both) |
+| Scorecard **(Use Case) Security - Service GitHub Repository Risk** | 7 checks: 4 Tag Defined checks on the risk tags, 3 Custom Property checks ([main guide](../../README.md#part-6-scorecard)) |
 
 Properties: GitHub Repo ID, Full Name, Description, Visibility, Archived, Empty, Created At, Last Pushed At,
-Age In Months, Languages, Topics; GitHub Data Classification, External Interface Type, Risk Priority.
+Age In Months, Languages, Topics.
 
 ## How a repository is matched to a Service
 
-1. The repository's `opslevel_service` GitHub custom property, if set: the Service's alias.
+1. Optional: the repository's `opslevel_service` GitHub custom property, if your org defines it: the Service's alias.
 2. Otherwise the repository name, lowercased, with `-` turned into `_` (`shopping-cart-service` →
    `shopping_cart_service`).
 
@@ -31,10 +32,9 @@ on repositories whose name doesn't match. One repository maps to one Service; a 
 service only.
 
 **Several repositories on one Service:** the integration writes each repository in turn, so the Service keeps the
-values of whichever synced last. A P1 repository can be hidden behind a P4 one, and the order isn't guaranteed.
-Point only the repository that represents the Service at it (set `opslevel_service` on that one, and give the
-others an `opslevel_service` that matches no Service, e.g. `none`), or use the GitHub Repository component package,
-which grades each repository separately.
+metadata (visibility, last push...) of whichever synced last, and the order isn't guaranteed. The risk tags are set
+per Service in Terraform, so classify the Service by its most sensitive repository. To grade each repository
+separately, use the GitHub Repository component package.
 
 ## Property aliases
 
@@ -46,10 +46,34 @@ If one differs, the integration reports it as a warning; fix the name or alias a
 
 See [../README.md](../README.md#choosing-a-package).
 
-## Risk Priority and scorecard checks
+## Risk tags
 
-The risk matrix and the 7 checks are the same in both packages; see
-[Risk Priority](../../README.md#risk-priority) and [Scorecard](../../README.md#part-5-scorecard) in the main guide.
+Each Service in `service_classifications` (keyed by Service alias) gets three tags:
+
+| Tag | Values |
+|---|---|
+| `data_classification` | public, internal, confidential, restricted |
+| `external_interface_type` | none (library, batch job, docs), internal_api (only internal callers), public_api (reachable from outside), public_web (a site or app end users open) |
+| `risk_priority` | P1–P4; set it per Service, or leave it out to use the suggested default below |
+
+Suggested default for `risk_priority` (impact × exposure; a starting point to adjust, not from a published standard):
+
+| Data classification | Public interface (`public_api`, `public_web`) | `internal_api` / `none` |
+|---|---|---|
+| confidential / restricted | P1 | P2 |
+| internal | P2 | P3 |
+| public | P3 | P4 |
+
+```hcl
+service_classifications = {
+  "payments_api" = { data_classification = "restricted", external_interface_type = "public_api" }   # P1
+  "docs_site"    = { data_classification = "public", external_interface_type = "public_web" }       # P3
+}
+```
+
+## Scorecard checks
+
+Same 7 checks as the step-by-step guide: see [Scorecard](../../README.md#part-6-scorecard).
 Checks written for Diamond go on Gold when `rubric_level_count = 3` (the default).
 
 ## Prerequisites
@@ -58,8 +82,7 @@ Checks written for Diamond go on Gold when `rubric_level_count = 3` (the default
 - An OpsLevel API token with write access (`OPSLEVEL_API_TOKEN`), a team to own the scorecard, and a rubric with
   at least 3 levels above Beginner.
 - A GitHub fine-grained token: your org as resource owner, all repositories, Repository permission
-  **Metadata: Read** (covers private repos and custom property values; no organization permission needed).
-- The `data_classification` and `external_interface_type` custom properties defined in your GitHub org.
+  **Metadata: Read** (covers private repos; no organization permission needed).
 
 ## Deploy
 
@@ -78,3 +101,18 @@ Then open the new integration in OpsLevel and click **Sync** (it also polls on i
 - `Languages` holds the primary language only.
 - Not created: properties nothing syncs from GitHub (CodeQL status, branch rules, contributors); add them with
   their own source when something populates them.
+- Classification is kept in Terraform, not GitHub, so it can drift from reality unless someone owns updating it.
+
+## Potential additions: classification from GitHub custom properties
+
+Instead of tags set in Terraform, the classification can come from each repository in GitHub. This needs
+configuring custom properties in GitHub first:
+
+1. In the GitHub org settings, create the custom properties `data_classification` and `external_interface_type`
+   (single select, values above) and set them on each repository.
+2. Add `github_data_classification` / `github_external_interface_type` (and a computed `github_risk_priority`) to
+   `properties.tf`, and map them in the transform from `.custom_properties.data_classification // null` and
+   `.custom_properties.external_interface_type // null`. The token's Metadata: Read permission already covers them.
+3. Point the Bronze checks and the P1/P2 filter at the properties instead of the tags, and drop
+   `service_classifications`. Several repos on one Service then overwrite each other's classification (last synced
+   wins), which tags avoid.

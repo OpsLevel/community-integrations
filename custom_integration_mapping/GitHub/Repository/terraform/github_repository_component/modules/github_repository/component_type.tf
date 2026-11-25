@@ -122,37 +122,6 @@ resource "opslevel_component_type" "github_repository" {
         "pattern" = "^[A-Za-z]+$"
       })
     }
-    data_classification = {
-      name                    = "Data Classification"
-      description             = "GitHub custom property data_classification (e.g. public, internal, confidential, restricted)."
-      display_status          = "visible"
-      allowed_in_config_files = false
-      locked_status           = "ui_locked"
-      schema = jsonencode({
-        "type" = "string"
-      })
-    }
-    external_interface_type = {
-      name                    = "External Interface Type"
-      description             = "GitHub custom property external_interface_type (e.g. none, internal_api, public_api, public_web)."
-      display_status          = "visible"
-      allowed_in_config_files = false
-      locked_status           = "ui_locked"
-      schema = jsonencode({
-        "type" = "string"
-      })
-    }
-    risk_priority = {
-      name                    = "Risk Priority"
-      description             = "Computed each sync from data classification x external interface type, one step higher for public repos holding non-public data; archived repos are P4. Unset until both GitHub custom properties are set. P1 = sensitive data behind a public interface."
-      display_status          = "visible"
-      allowed_in_config_files = false
-      locked_status           = "ui_locked"
-      schema = jsonencode({
-        "type" = "string"
-        "enum" = ["P1", "P2", "P3", "P4"]
-      })
-    }
     github_topics = {
       name                    = "GitHub Topics"
       description             = "Topics set on the repository in GitHub."

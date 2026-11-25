@@ -22,8 +22,8 @@ TYPE = {
     "name": "GitHub Repository",
     "alias": "github_repository",
     "description": ("One component per GitHub repository, created and kept up to date by the GitHub Repositories "
-                    "custom integration (repo metadata, visibility, dates, data classification and external interface "
-                    "type for risk-based checks)."),
+                    "custom integration (repo metadata, visibility, dates), tagged with its risk classification for "
+                    "risk-based checks."),
 }
 
 STR, BOOL, DATE = {"type": "string"}, {"type": "boolean"}, {"type": "string", "format": "date-time"}
@@ -53,15 +53,6 @@ PROPERTIES = [
      "longer used", "integration"),
     ("Visibility", "visibility", {"type": "string", "pattern": "^[A-Za-z]+$"},
      "The ability for people in and out of the organization to be able to view the repository", "integration"),
-    ("Data Classification", "data_classification", STR,
-     "GitHub custom property data_classification (e.g. public, internal, confidential, restricted).", "integration"),
-    ("External Interface Type", "external_interface_type", STR,
-     "GitHub custom property external_interface_type (e.g. none, internal_api, public_api, public_web).",
-     "integration"),
-    ("Risk Priority", "risk_priority", {"type": "string", "enum": ["P1", "P2", "P3", "P4"]},
-     "Computed each sync from data classification x external interface type, one step higher for public repos "
-     "holding non-public data; archived repos are P4. Unset until both GitHub custom properties are set. "
-     "P1 = sensitive data behind a public interface.", "integration"),
     ("GitHub Topics", "github_topics", {"type": "array", "items": STR, "uniqueItems": True},
      "Topics set on the repository in GitHub.", "integration"),
 ]

@@ -26,3 +26,13 @@ variable "github_token" {
   sensitive   = true
   default     = null
 }
+
+variable "repo_classifications" {
+  description = "Per GitHub repo name: data_classification, external_interface_type, optional risk_priority (set as tags)."
+  type = map(object({
+    data_classification     = string
+    external_interface_type = string
+    risk_priority           = optional(string)
+  }))
+  default = {}
+}

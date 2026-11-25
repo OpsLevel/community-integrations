@@ -14,9 +14,9 @@ resource "opslevel_scorecard" "github_repository_risk" {
   filter_id                      = opslevel_filter.active.id
   affects_overall_service_levels = var.scorecard_affects_overall_levels
   description                    = <<-EOT
-    Risk-based standards for GitHub repositories. Each repo's **Risk Priority** (P1-P4) comes from two GitHub custom properties: **data classification** (public, internal, confidential, restricted) and **external interface type** (none, internal_api, public_api, public_web), one step higher when a public repo holds non-public data. P1 = confidential or restricted data behind a public interface.
+    Risk-based standards for GitHub repositories. Each repo's **risk_priority** tag (P1-P4) comes from its **data_classification** tag (public, internal, confidential, restricted) and **external_interface_type** tag (none, internal_api, public_api, public_web). P1 = confidential or restricted data behind a public interface.
 
-    - **Bronze**: the repo is classified (both custom properties set in GitHub).
+    - **Bronze**: the repo is classified (data_classification and external_interface_type tags set).
     - **Silver**: it has a description and isn't P1.
     - **Gold**: P1/P2 repos aren't public.
     - **Diamond** (Gold in accounts with three levels): P1/P2 repos are actively maintained, and the repo's risk is P3 or lower.
@@ -28,83 +28,85 @@ resource "opslevel_scorecard" "github_repository_risk" {
 locals {
   scorecard_category = opslevel_scorecard.github_repository_risk.categories[0]
 
-  # Custom Property checks on the GitHub Repository type. Each predicate is jq run against the property value.
-  # high_risk = true: only P1/P2 repos (the check's filter excludes the rest, so they aren't held back).
+  # kind = "tag": Tag Defined check on the risk tags (tags.tf). kind = "property": Custom Property check on the
+  # GitHub Repository type, jq run against the property value. high_risk = true: only P1/P2 repos (the check's
+  # filter excludes the rest, so they aren't held back).
   checks = {
     data_classification_is_set = {
-      name      = "Data classification is set"
-      level     = "1"
-      property  = "data_classification"
-      jq        = "IN(\"public\", \"internal\", \"confidential\", \"restricted\")"
-      high_risk = false
-      notes     = "Set the `data_classification` custom property on the repo in GitHub (Settings > Custom properties): public, internal, confidential or restricted."
+      kind = "tag", name = "Data classification tag is set", level = "1", high_risk = false
+      key  = "data_classification", predicate = "matches_regex", value = "^(public|internal|confidential|restricted)$"
+      notes = "Tag the component `data_classification`: public, internal, confidential or restricted."
     }
     external_interface_type_is_set = {
-      name      = "External interface type is set"
-      level     = "1"
-      property  = "external_interface_type"
-      jq        = "IN(\"none\", \"internal_api\", \"public_api\", \"public_web\")"
-      high_risk = false
-      notes     = "Set the `external_interface_type` custom property on the repo in GitHub: none, internal_api, public_api or public_web."
+      kind = "tag", name = "External interface type tag is set", level = "1", high_risk = false
+      key  = "external_interface_type", predicate = "matches_regex", value = "^(none|internal_api|public_api|public_web)$"
+      notes = "Tag the component `external_interface_type`: none, internal_api, public_api or public_web."
     }
     repository_has_a_description = {
-      name      = "Repository has a description"
-      level     = "2"
-      property  = "repository_description"
-      jq        = "type == \"string\" and test(\"\\\\S\")"
-      high_risk = false
-      notes     = "Add a description to the repository in GitHub so owners and reviewers know what it holds."
+      kind = "property", name = "Repository has a description", level = "2", high_risk = false
+      key  = "repository_description", predicate = "satisfies_jq_expression", value = "type == \"string\" and test(\"\\\\S\")"
+      notes = "Add a description to the repository in GitHub so owners and reviewers know what it holds."
     }
     not_a_p1_risk = {
-      name      = "Not a P1 risk"
-      level     = "2"
-      property  = "risk_priority"
-      jq        = ". != \"P1\""
-      high_risk = false
-      notes     = "P1 means confidential or restricted data behind a public interface. Reduce exposure (internal-only interface, private repo) or confirm the classification with security."
+      kind = "tag", name = "Not a P1 risk", level = "2", high_risk = false
+      key  = "risk_priority", predicate = "does_not_equal", value = "P1"
+      notes = "P1 means confidential or restricted data behind a public interface. Reduce exposure (internal-only interface, private repo) or confirm the classification with security."
     }
     high_risk_repository_is_not_public = {
-      name      = "High risk: repository is not public"
-      level     = "3"
-      property  = "visibility"
-      jq        = ". != \"public\""
-      high_risk = true
-      notes     = "P1/P2 repos hold sensitive data or expose public interfaces; make the repository private or internal."
+      kind = "property", name = "High risk: repository is not public", level = "3", high_risk = true
+      key  = "visibility", predicate = "satisfies_jq_expression", value = ". != \"public\""
+      notes = "P1/P2 repos hold sensitive data or expose public interfaces; make the repository private or internal."
     }
     high_risk_pushed_to_in_the_last_90_days = {
-      name      = "High risk: pushed to in the last 90 days"
-      level     = "4"
-      property  = "updated_date"
-      jq        = "(sub(\"\\\\.[0-9]+\"; \"\") | fromdateiso8601) > (now - 7776000)"
-      high_risk = true
-      notes     = "Unmaintained P1/P2 repos miss security fixes. Ship a change, or archive the repo if it's no longer used."
+      kind = "property", name = "High risk: pushed to in the last 90 days", level = "4", high_risk = true
+      key  = "updated_date", predicate = "satisfies_jq_expression", value = "(sub(\"\\\\.[0-9]+\"; \"\") | fromdateiso8601) > (now - 7776000)"
+      notes = "Unmaintained P1/P2 repos miss security fixes. Ship a change, or archive the repo if it's no longer used."
     }
     risk_priority_p3_or_lower = {
-      name      = "Risk priority P3 or lower"
-      level     = "4"
-      property  = "risk_priority"
-      jq        = ". == \"P3\" or . == \"P4\""
-      high_risk = false
-      notes     = "Lower the repo's risk: narrow its external interface or move sensitive data out of it."
+      kind = "tag", name = "Risk priority P3 or lower", level = "4", high_risk = false
+      key  = "risk_priority", predicate = "matches_regex", value = "^P[34]$"
+      notes = "Lower the repo's risk: narrow its external interface or move sensitive data out of it."
     }
   }
 }
 
+locals {
+  check_level  = { for k, c in local.checks : k => data.opslevel_rubric_level.level[tostring(min(tonumber(c.level), var.rubric_level_count))].id }
+  check_filter = { for k, c in local.checks : k => c.high_risk ? opslevel_filter.high_risk.id : null }
+}
+
 resource "opslevel_check_service_property" "this" {
-  for_each = local.checks
+  for_each = { for k, c in local.checks : k => c if c.kind == "property" }
 
   name                = each.value.name
   category            = local.scorecard_category
-  level               = data.opslevel_rubric_level.level[tostring(min(tonumber(each.value.level), var.rubric_level_count))].id
+  level               = local.check_level[each.key]
   owner               = data.opslevel_team.owner.id
   enabled             = var.checks_enabled
-  filter              = each.value.high_risk ? opslevel_filter.high_risk.id : null
+  filter              = local.check_filter[each.key]
   property            = "custom_property"
   component_type      = opslevel_component_type.github_repository.id
-  property_definition = each.value.property
+  property_definition = each.value.key
   predicate = {
-    type  = "satisfies_jq_expression"
-    value = each.value.jq
+    type  = each.value.predicate
+    value = each.value.value
+  }
+  notes = each.value.notes
+}
+
+resource "opslevel_check_tag_defined" "this" {
+  for_each = { for k, c in local.checks : k => c if c.kind == "tag" }
+
+  name     = each.value.name
+  category = local.scorecard_category
+  level    = local.check_level[each.key]
+  owner    = data.opslevel_team.owner.id
+  enabled  = var.checks_enabled
+  filter   = local.check_filter[each.key]
+  tag_key  = each.value.key
+  tag_predicate = {
+    type  = each.value.predicate
+    value = each.value.value
   }
   notes = each.value.notes
 }

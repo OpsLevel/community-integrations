@@ -1,6 +1,7 @@
 ---
 transforms:
-# One "GitHub Repository" component per repo, created on first sync.
+# One "GitHub Repository" component per repo, created on first sync. The risk tags (data_classification,
+# external_interface_type, risk_priority) aren't set here: see the README "Part 5: Classify repositories".
 - external_kind: github_repos
   opslevel_kind: github_repository
   # The GitHub repo id is unique and never changes (names can collide once normalized, and repos get renamed).
@@ -20,7 +21,3 @@ transforms:
     # The org repos endpoint only returns the primary language; the full list needs /repos/{repo}/languages.
     top_languages: 'if .language then [.language] else null end'
     github_topics: .topics // []
-    data_classification: .custom_properties.data_classification // null
-    external_interface_type: .custom_properties.external_interface_type // null
-    # P1 = confidential/restricted data behind a public interface; see README "Risk Priority".
-    risk_priority: 'if .archived then "P4" else (.custom_properties.data_classification // null) as $dc | (.custom_properties.external_interface_type // null) as $ei | if $dc == null or $ei == null then null else ($dc | IN("confidential", "restricted")) as $sens | ($ei | IN("public_api", "public_web")) as $exp | (if $sens and $exp then 1 elif $sens or ($dc == "internal" and $exp) then 2 elif $dc == "internal" or $exp then 3 else 4 end) as $p | "P\(if .visibility == "public" and $dc != "public" and $p > 1 then $p - 1 else $p end)" end end'
