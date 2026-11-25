@@ -68,7 +68,7 @@ Then open the new custom integration in OpsLevel and click **Sync** (it also pol
   Terraform create it instead, set `manage_secrets = true` and `github_token`; the token is then stored in the
   Terraform state.
 - **Keep state and tfvars out of version control.** Terraform state (and `terraform.tfvars`, when it holds the
-  token) can contain the GitHub token and your account's ids. This folder's `.gitignore` excludes `*.tfstate*`,
+  token) can contain the GitHub token and your account's ids. The repository's `.gitignore` excludes `*.tfstate*`,
   `.terraform/`, `*.tfvars` and plan files; for real deployments, use a remote backend with encryption.
 
 ## Troubleshooting
