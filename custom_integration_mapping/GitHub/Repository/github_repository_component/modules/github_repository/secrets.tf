@@ -11,7 +11,7 @@ resource "opslevel_secret" "github_token" {
   lifecycle {
     precondition {
       condition     = var.github_token != null
-      error_message = "Set github_token, or manage_secrets = false if the secret already exists."
+      error_message = "manage_secrets = true needs github_token. To use a secret that already exists, leave manage_secrets false."
     }
   }
 }

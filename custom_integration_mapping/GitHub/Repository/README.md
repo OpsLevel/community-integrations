@@ -38,13 +38,14 @@ extractor follows GitHub's `Link` header, so every repo in the org is read, 100 
 | Who sees the data | Repo components (owned through the Component link) | The owning team, on the service they already own |
 | Catalog growth | One component per repository | None |
 
-Pick one. Both create a secret with the same alias (`github_api_token`), so to switch, `terraform destroy` the first
-one before applying the other (or give one of them a different `github_token_secret_alias`).
+Pick one. Both read the same secret (`github_api_token`). If you let Terraform manage it (`manage_secrets = true`),
+only one of them can: `terraform destroy` the first before applying the other, or give one a different
+`github_token_secret_alias`.
 
 ## Prerequisites
 
 - Terraform or OpenTofu ≥ 1.5 and the OpsLevel provider ≥ 1.14.
-- An OpsLevel API token with write access, and a team to own the secret (`owner_team_alias`).
+- An OpsLevel API token with write access, and a team alias (`owner_team_alias`; owns the secret if Terraform creates it).
 - A GitHub **fine-grained personal access token**: your org as resource owner, **All repositories**, Repository
   permission **Metadata: Read** (the default). That covers private repositories; no organization permission is
   needed. A classic token with the `repo` scope also works. If your org requires approval for fine-grained tokens,
@@ -54,7 +55,7 @@ one before applying the other (or give one of them a different `github_token_sec
 
 ```bash
 cd github_repository_component/example      # or github_service_properties/example
-cp terraform.tfvars.example terraform.tfvars  # GitHub org, owner team alias, GitHub token
+cp terraform.tfvars.example terraform.tfvars  # GitHub org, owner team alias
 export OPSLEVEL_API_TOKEN=...                 # OpsLevel API token with write access
 # export OPSLEVEL_API_URL=https://<subdomain>.opslevel.com   # only if your account isn't on app.opslevel.com
 terraform init && terraform plan && terraform apply
@@ -62,16 +63,20 @@ terraform init && terraform plan && terraform apply
 
 Then open the new custom integration in OpsLevel and click **Sync** (it also polls on its own schedule).
 
-- **Existing secret:** if `github_api_token` already exists in your account, set `manage_secrets = false`.
-- `terraform.tfvars` holds your GitHub token: keep it out of version control (each package's `.gitignore` already
-  excludes it).
+- **The GitHub token secret:** by default Terraform doesn't manage it (`manage_secrets = false`), so create the
+  secret **`github_api_token`** in OpsLevel (**Settings → Secrets**) with the token before the first sync. To have
+  Terraform create it instead, set `manage_secrets = true` and `github_token`; the token is then stored in the
+  Terraform state.
+- **Keep state and tfvars out of version control.** Terraform state (and `terraform.tfvars`, when it holds the
+  token) can contain the GitHub token and your account's ids. This folder's `.gitignore` excludes `*.tfstate*`,
+  `.terraform/`, `*.tfvars` and plan files; for real deployments, use a remote backend with encryption.
 
 ## Troubleshooting
 
 #### The poll returns 401
 
-The token is expired, revoked or missing. Create a new one and update the `github_api_token` secret (or set
-`github_token` and `apply`).
+The token is expired, revoked or missing. Create a new one and update the `github_api_token` secret in OpsLevel (or,
+with `manage_secrets = true`, set the new `github_token` and `apply`).
 
 #### Private repositories are missing
 

@@ -9,9 +9,9 @@ variable "owner_team_alias" {
 }
 
 variable "manage_secrets" {
-  description = "Create the OpsLevel secret holding the GitHub token. Set false if it already exists."
+  description = "Create the OpsLevel secret holding the GitHub token (needs github_token). Default false: create the github_api_token secret in OpsLevel yourself."
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "github_token" {

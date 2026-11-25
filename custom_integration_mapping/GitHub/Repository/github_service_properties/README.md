@@ -13,7 +13,7 @@ custom integration. No new component type: owners see the data on the services t
 |---|---|
 | 10 custom properties on the default component type (Service), prefixed `github_` | Set by the integration, locked in the UI and not allowed in `opslevel.yml` |
 | Custom integration **Integration Data Mapping (Pull) - GitHub Repo Metadata on Services** | Polls `GET /orgs/<org>/repos` and writes each repository's metadata onto its Service. Creates nothing; repositories with no matching Service are skipped |
-| Secret `github_api_token` | The GitHub token the integration uses (`manage_secrets = false` to reuse an existing one) |
+| Secret `github_api_token` (optional) | The GitHub token the integration reads. Not created by default: create it in OpsLevel, or set `manage_secrets = true` and `github_token` |
 
 Properties: GitHub Repo ID, Full Name, Description, Visibility, Archived, Empty, Created At, Last Pushed At,
 Age In Months, Topics. The extract and transform definitions are in
@@ -43,7 +43,7 @@ If one differs, the integration reports it as a warning; fix the name or alias a
 
 ```bash
 cd example
-cp terraform.tfvars.example terraform.tfvars   # GitHub org, owner team, GitHub token
+cp terraform.tfvars.example terraform.tfvars   # GitHub org, owner team (and the token, if Terraform creates the secret)
 export OPSLEVEL_API_TOKEN=...
 terraform init && terraform plan && terraform apply
 ```

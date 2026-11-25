@@ -33,9 +33,9 @@ variable "github_integration_name" {
 
 # --- secrets ---
 variable "manage_secrets" {
-  description = "Create the OpsLevel secret the GitHub extractor reads. Set false when they already exist in the account."
+  description = "Create the OpsLevel secret the GitHub extractor reads, from github_token. Default false: the secret (github_token_secret_alias) must already exist in the account."
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "github_token_secret_alias" {

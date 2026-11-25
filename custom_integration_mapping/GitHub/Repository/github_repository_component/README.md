@@ -10,7 +10,7 @@ repository is what makes repository-level checks possible.
 |---|---|
 | Component type **GitHub Repository** (`github_repository`) | 10 properties synced from GitHub (below) and a **Component** relationship you set by hand to the Service, Backend, Frontend, etc. the repository belongs to |
 | Custom integration **Integration Data Mapping (Pull) - GitHub Repositories** | Polls `GET /orgs/<org>/repos` and creates or updates one component per repository, named `GitHub Repo - <name>`, identified by the GitHub repo id (alias `github_repo_<id>`), so renamed or similarly named repos never share a component |
-| Secret `github_api_token` | The GitHub token the integration uses (`manage_secrets = false` to reuse an existing one) |
+| Secret `github_api_token` (optional) | The GitHub token the integration reads. Not created by default: create it in OpsLevel, or set `manage_secrets = true` and `github_token` |
 
 ## Properties
 
@@ -35,7 +35,7 @@ The extract and transform definitions are in [`modules/github_repository/definit
 
 ```bash
 cd example
-cp terraform.tfvars.example terraform.tfvars   # GitHub org, owner team, GitHub token
+cp terraform.tfvars.example terraform.tfvars   # GitHub org, owner team (and the token, if Terraform creates the secret)
 export OPSLEVEL_API_TOKEN=...
 terraform init && terraform plan && terraform apply
 ```

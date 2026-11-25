@@ -76,7 +76,7 @@ it instead of the integration's own example:
 
 ```bash
 cd examples/github_repository_component      # or examples/github_service_properties
-cp terraform.tfvars.example terraform.tfvars  # GitHub org, owner team, GitHub token, rubric levels, classifications
+cp terraform.tfvars.example terraform.tfvars  # GitHub org, owner team, rubric levels, classifications
 export OPSLEVEL_API_TOKEN=...
 terraform init && terraform plan && terraform apply
 ```
