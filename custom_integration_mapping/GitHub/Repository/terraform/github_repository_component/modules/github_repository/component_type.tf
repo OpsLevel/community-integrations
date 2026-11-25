@@ -84,22 +84,6 @@ resource "opslevel_component_type" "github_repository" {
         "type" = "string"
       })
     }
-    top_languages = {
-      name                    = "Top Languages"
-      description             = "- the languages most used in the repo\n- there is a max of 8"
-      display_status          = "visible"
-      allowed_in_config_files = false
-      locked_status           = "ui_locked"
-      schema = jsonencode({
-        "type" = "array"
-        "items" = {
-          "type" = "string"
-        }
-        "maxItems" = 8
-        "minItems" = 1
-        "uniqueItems" = true
-      })
-    }
     updated_date = {
       name                    = "Updated Date"
       description             = "- date the repo last had changes\n- this would be useful for finding out which repos might be stale or no longer used"

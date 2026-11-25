@@ -71,7 +71,6 @@ input fields by introspection before changing anything. Every property is set by
 | `creation_date` | date-time | `.created_at` |
 | `updated_date` | date-time | `.pushed_at` (last push: the best "last had changes" signal) |
 | `age_in_months` | integer | whole calendar months between `.created_at` and now |
-| `top_languages` | string array | `[.language]` (primary language only) |
 | `github_topics` | string array | `.topics` |
 
 Component identifier (alias): `github_repo_<GitHub repo id>`. The id is unique and never changes, so a renamed
@@ -148,7 +147,7 @@ transforms:
     name: '"GitHub Repo - \(.name)"'
     github_id: .id
     repository_name: .full_name
-    # ... see transform_definition.yaml for all 11 properties, including age_in_months
+    # ... see transform_definition.yaml for all 10 properties, including age_in_months
 ```
 
 OpsLevel reformats a saved definition (sorted keys, double-quoted strings); that's expected.

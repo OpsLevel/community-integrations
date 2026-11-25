@@ -45,9 +45,6 @@ PROPERTIES = [
     ("Repository Description", "repository_description", STR,
      "The description of the repository as listed in Github.", "integration"),
     ("Repository Name", "repository_name", STR, "The full name of the repository in github", "integration"),
-    ("Top Languages", "top_languages",
-     {"type": "array", "items": STR, "maxItems": 8, "minItems": 1, "uniqueItems": True},
-     "- the languages most used in the repo\n- there is a max of 8", "integration"),
     ("Updated Date", "updated_date", DATE,
      "- date the repo last had changes\n- this would be useful for finding out which repos might be stale or no "
      "longer used", "integration"),

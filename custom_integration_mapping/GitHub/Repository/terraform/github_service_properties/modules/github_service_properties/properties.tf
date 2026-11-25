@@ -49,11 +49,6 @@ locals {
       desc   = "Whole calendar months since the repository was created, recomputed each sync."
       schema = { type = "integer", minimum = 0 }
     }
-    languages = {
-      name   = "GitHub Repo Languages"
-      desc   = "The repository's primary language as reported by GitHub."
-      schema = { type = "array", items = { type = "string" }, minItems = 1, maxItems = 8, uniqueItems = true }
-    }
     topics = {
       name   = "GitHub Repo Topics"
       desc   = "Topics set on the repository in GitHub."

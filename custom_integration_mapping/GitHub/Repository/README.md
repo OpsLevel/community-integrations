@@ -35,8 +35,8 @@ Nothing runs on your infrastructure: OpsLevel calls the GitHub API with a token 
 
 ## What you get
 
-- **GitHub Repository** component type (`github_repository`) with 11 properties synced from GitHub: name,
-  description, visibility, archived, empty, creation and last-push dates, age in months, primary language, topics.
+- **GitHub Repository** component type (`github_repository`) with 10 properties synced from GitHub: name,
+  description, visibility, archived, empty, creation and last-push dates, age in months, topics.
   Components are identified by the GitHub repo id, so renamed repos keep their component.
 - **Risk tags** on each component: `data_classification`, `external_interface_type` and `risk_priority` (P1–P4,
   with a [suggested default](step_by_step_setup.md#risk-priority) from the other two).
@@ -50,15 +50,14 @@ Nothing runs on your infrastructure: OpsLevel calls the GitHub API with a token 
 |---|---|
 | [`step_by_step_setup.md`](step_by_step_setup.md) | The manual setup guide, with troubleshooting |
 | [`extract_definition.yaml`](extract_definition.yaml) | Extractor: polls `GET /orgs/<your_github_org>/repos`, following every page |
-| [`transform_definition.yaml`](transform_definition.yaml) | Transform: one `github_repository` component per repo, 11 properties |
+| [`transform_definition.yaml`](transform_definition.yaml) | Transform: one `github_repository` component per repo, 10 properties |
 | [`example_github_api_response.json`](example_github_api_response.json) | Sample GitHub response (3 fictional repos) to test the transform's jq locally |
-| [`scripts/create_github_repository_type.py`](scripts/create_github_repository_type.py) | Creates or updates the component type and its 11 properties (dry run unless `--apply`) |
+| [`scripts/create_github_repository_type.py`](scripts/create_github_repository_type.py) | Creates or updates the component type and its 10 properties (dry run unless `--apply`) |
 | [`scripts/create_github_repository_scorecard.py`](scripts/create_github_repository_scorecard.py) | Creates the 3 filters, the scorecard and its 7 checks (dry run unless `--apply`) |
 | [`terraform/`](terraform/) | Terraform / OpenTofu packages for the whole setup |
 
 ## Limits
 
-- **Primary language only.** `top_languages` holds `.language`; the full list needs `/repos/{repo}/languages` per repo.
 - **Classification is kept in OpsLevel, not GitHub,** so it can drift from reality unless someone owns updating it.
 - **No automatic link** between a repo component and the component it belongs to (see [Part 7](step_by_step_setup.md#part-7-link-repos-to-their-components)).
 
@@ -84,6 +83,8 @@ needs configuring custom properties in GitHub first:
 - **More properties from the same payload.** The transform receives the full repo object, so properties such as
   `default_branch: .default_branch` or `has_issues: .has_issues` only need a property on the type and a line in the
   transform. Add them to `PROPERTIES` in the type script too.
+- **Languages.** The org repos endpoint only returns the primary `.language`; a full list per repo needs a chained
+  extractor that calls `/repos/{owner}/{repo}/languages` for each repo, plus an array property on the type.
 - **Properties the org endpoint doesn't return** (CodeQL status, branch rulesets, top contributors) need per-repo
   API calls or a separate integration; add them with their own source, then add checks for them (for example, CodeQL
   enabled on P1/P2 repos).

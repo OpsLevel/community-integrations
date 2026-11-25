@@ -11,7 +11,7 @@ risk-based standards. No new component type: owners see the data and the scoreca
 
 | Resource | Details |
 |---|---|
-| 11 custom properties on the default component type (Service), prefixed `github_` | Set by the integration, locked in the UI (below) |
+| 10 custom properties on the default component type (Service), prefixed `github_` | Set by the integration, locked in the UI (below) |
 | Custom integration **Integration Data Mapping (Pull) - GitHub Repo Metadata on Services** | Polls `GET /orgs/<org>/repos` and writes each repository's metadata onto its Service. Creates nothing; repositories with no matching Service are skipped |
 | Secret `github_api_token` | The GitHub token the integration uses (`manage_secrets = false` to reuse an existing one) |
 | Risk tags | `data_classification`, `external_interface_type` and `risk_priority` on each Service in `service_classifications` |
@@ -19,7 +19,7 @@ risk-based standards. No new component type: owners see the data and the scoreca
 | Scorecard **(Use Case) Security - Service GitHub Repository Risk** | 7 checks: 4 Tag Defined checks on the risk tags, 3 Custom Property checks ([main guide](../../step_by_step_setup.md#part-6-scorecard)) |
 
 Properties: GitHub Repo ID, Full Name, Description, Visibility, Archived, Empty, Created At, Last Pushed At,
-Age In Months, Languages, Topics.
+Age In Months, Topics.
 
 ## How a repository is matched to a Service
 
@@ -98,7 +98,6 @@ Then open the new integration in OpsLevel and click **Sync** (it also polls on i
 ## Limits
 
 - Reads every repository in the org, 100 per request, following GitHub's `Link` header to the next page.
-- `Languages` holds the primary language only.
 - Not created: properties nothing syncs from GitHub (CodeQL status, branch rules, contributors); add them with
   their own source when something populates them.
 - Classification is kept in Terraform, not GitHub, so it can drift from reality unless someone owns updating it.

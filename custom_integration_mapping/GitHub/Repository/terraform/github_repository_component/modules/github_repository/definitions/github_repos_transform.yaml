@@ -18,6 +18,4 @@ transforms:
     creation_date: .created_at
     updated_date: .pushed_at
     age_in_months: '(.created_at | fromdateiso8601 | gmtime) as $c | (now | gmtime) as $n | (($n[0] - $c[0]) * 12 + ($n[1] - $c[1]) - (if $n[2] < $c[2] then 1 else 0 end))'
-    # The org repos endpoint only returns the primary language; the full list needs /repos/{repo}/languages.
-    top_languages: 'if .language then [.language] else null end'
     github_topics: .topics // []

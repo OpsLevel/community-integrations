@@ -1,7 +1,7 @@
 ---
 transforms:
 # One "GitHub Repository" component per repo, created on first sync. The risk tags (data_classification,
-# external_interface_type, risk_priority) aren't set here: see the README "Part 5: Classify repositories".
+# external_interface_type, risk_priority) aren't set here: see step_by_step_setup.md "Part 5: Classify repositories".
 - external_kind: github_repos
   opslevel_kind: github_repository
   # The GitHub repo id is unique and never changes (names can collide once normalized, and repos get renamed).
@@ -18,6 +18,4 @@ transforms:
     creation_date: .created_at
     updated_date: .pushed_at
     age_in_months: '(.created_at | fromdateiso8601 | gmtime) as $c | (now | gmtime) as $n | (($n[0] - $c[0]) * 12 + ($n[1] - $c[1]) - (if $n[2] < $c[2] then 1 else 0 end))'
-    # The org repos endpoint only returns the primary language; the full list needs /repos/{repo}/languages.
-    top_languages: 'if .language then [.language] else null end'
     github_topics: .topics // []

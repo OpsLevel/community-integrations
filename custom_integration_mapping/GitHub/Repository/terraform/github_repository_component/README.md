@@ -11,7 +11,7 @@ integration, risk tags, filters and scorecard.
 
 | Resource | Details |
 |---|---|
-| Component type **GitHub Repository** (`github_repository`) | 11 properties synced from GitHub (below) and a **Component** relationship you set by hand to the Service, Backend, Frontend, etc. the repository belongs to |
+| Component type **GitHub Repository** (`github_repository`) | 10 properties synced from GitHub (below) and a **Component** relationship you set by hand to the Service, Backend, Frontend, etc. the repository belongs to |
 | Custom integration **Integration Data Mapping (Pull) - GitHub Repositories** | Polls `GET /orgs/<org>/repos` and creates or updates one component per repository, named `GitHub Repo - <name>`, identified by the GitHub repo id (alias `github_repo_<id>`), so renamed or similarly named repos never share a component |
 | Secret `github_api_token` | The GitHub token the integration uses (`manage_secrets = false` to reuse an existing one) |
 | Risk tags | `data_classification`, `external_interface_type` and `risk_priority` on each GitHub Repository component, from `repo_classifications` |
@@ -19,7 +19,7 @@ integration, risk tags, filters and scorecard.
 | Scorecard **(Use Case) Security - GitHub Repository Risk** | 7 checks: 4 Tag Defined checks on the risk tags, 3 Custom Property checks ([main guide](../../step_by_step_setup.md#part-6-scorecard)) |
 
 Properties (all set by the integration, locked in the UI): GitHub ID, Repository Name, Repository Description,
-Visibility, archived, empty, Creation Date, Updated Date (last push), Age (in months), Top Languages, GitHub Topics.
+Visibility, archived, empty, Creation Date, Updated Date (last push), Age (in months), GitHub Topics.
 
 ## After apply
 
@@ -91,7 +91,6 @@ Then open the new integration in OpsLevel and click **Sync** (it also polls on i
 ## Limits
 
 - Reads every repository in the org, 100 per request, following GitHub's `Link` header to the next page.
-- `Languages` holds the primary language only.
 - Not created: properties nothing syncs from GitHub (CodeQL status, branch rules, contributors); add them with
   their own source when something populates them.
 - Classification is kept in Terraform, not GitHub, so it can drift from reality unless someone owns updating it.
