@@ -1,6 +1,6 @@
 # Terraform: GitHub repository metadata in OpsLevel
 
-Two Terraform (or OpenTofu) packages that set up everything in the [main guide](../README.md) with `terraform apply`:
+Two Terraform (or OpenTofu) packages that set up everything in the [step-by-step guide](../step_by_step_setup.md) with `terraform apply`:
 component type or properties, the custom integration, the GitHub token secret, filters, and the risk scorecard.
 Both pull the same GitHub data and classify risk with the same OpsLevel tags (`data_classification`,
 `external_interface_type`, `risk_priority`) set from a map in your tfvars; they differ in where the data lands.
