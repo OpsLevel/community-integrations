@@ -1654,6 +1654,58 @@ opslevel graphql --paginate -a=".account.services.nodes[]" -q='query all_service
 ```
 </details>
 
+### services > relationshipDefinitions and values
+
+```graphql
+query get_relationshipDefinitions_and_values_on_edges {
+  account {
+    services(type: {alias: "service"}) {
+      nodes {
+        name
+        relatedResources {
+          edges {
+            relationshipDefinition {
+              name
+            }
+            node {
+              ... on Service {
+                __typename
+                name
+                ServiceType: type {
+                  name
+                  id
+                }
+              }
+              ... on User {
+                __typename
+                name
+              }
+              ... on Team {
+                __typename
+                name
+              }
+              ... on System {
+                __typename
+                name
+              }
+              ... on Domain {
+                __typename
+                name
+              }
+              ...on InfrastructureResource{
+                __typename
+                InfrastructureResourceType: type
+                name
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
 ### 🔎 service (query for ”everything” for a specific service)
 
 ```graphql
