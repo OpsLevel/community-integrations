@@ -1,4 +1,3 @@
-```markdown
 # OpsLevel Teams and Users Exporter
 
 This Python script retrieves team and user data from OpsLevel using the GraphQL API and exports it to a CSV file.
@@ -102,4 +101,3 @@ The script includes error handling for:
 
 * Ensure that you have the necessary permissions to access the OpsLevel API.
 * The CSV file will overwrite any existing file with the same name.
-```
